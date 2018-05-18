@@ -1,0 +1,202 @@
+[
+    {
+        "fixed-hash": "009BC85EF547B51EBF461C83A9CBAB30", 
+        "replay-hash": "47BFE9D10F26B0A8B74C637D6327BF3C", 
+        "data-hash": "8D9FEF2E1CF7C6C9CBE4FBCA830DDE1C", 
+        "label": "3.13", 
+        "base-version": 52910, 
+        "version": 52910
+    }, 
+    {
+        "fixed-hash": "29198786619C9011735BCFD378E49CB6", 
+        "replay-hash": "5AF236FC012ADB7289DB493E63F73FD5", 
+        "data-hash": "CA275C4D6E213ED30F80BACCDFEDB1F5", 
+        "label": "3.14", 
+        "base-version": 53644, 
+        "version": 53644
+    }, 
+    {
+        "fixed-hash": "D5963F25A17D9E1EA406FF6BBAA9B736", 
+        "replay-hash": "43530321CF29FD11482AB9CBA3EB553D", 
+        "data-hash": "BBF619CCDCC80905350F34C2AF0AB4F6", 
+        "label": "3.15", 
+        "base-version": 54518, 
+        "version": 54518
+    }, 
+    {
+        "fixed-hash": "D5963F25A17D9E1EA406FF6BBAA9B736", 
+        "replay-hash": "43530321CF29FD11482AB9CBA3EB553D", 
+        "data-hash": "6EB25E687F8637457538F4B005950A5E", 
+        "label": "3.15.1", 
+        "base-version": 54518, 
+        "version": 54724
+    }, 
+    {
+        "fixed-hash": "0189B2804E2F6BA4C4591222089E63B2", 
+        "replay-hash": "B11811B13F0C85C29C5D4597BD4BA5A4", 
+        "data-hash": "60718A7CA50D0DF42987A30CF87BCB80", 
+        "label": "3.16", 
+        "base-version": 55505, 
+        "version": 55505
+    }, 
+    {
+        "fixed-hash": "717B05ACD26C108D18A219B03710D06D", 
+        "replay-hash": "21C8FA403BB1194E2B6EB7520016B958", 
+        "data-hash": "5BD7C31B44525DAB46E64C4602A81DC2", 
+        "label": "3.16.1", 
+        "base-version": 55958, 
+        "version": 55958
+    }, 
+    {
+        "fixed-hash": "4E1C17AB6A79185A0D87F68D1C673CD9", 
+        "replay-hash": "D0296961C9EA1356F727A2468967A1E2", 
+        "data-hash": "DFD1F6607F2CF19CB4E1C996B2563D9B", 
+        "label": "3.17", 
+        "base-version": 56787, 
+        "version": 56787
+    }, 
+    {
+        "fixed-hash": "4474B6B7B0D1423DAA76B9623EF2E9A9", 
+        "replay-hash": "D0296961C9EA1356F727A2468967A1E2", 
+        "data-hash": "3F2FCED08798D83B873B5543BEFA6C4B", 
+        "label": "3.17.1", 
+        "base-version": 56787, 
+        "version": 57218
+    }, 
+    {
+        "fixed-hash": "4474B6B7B0D1423DAA76B9623EF2E9A9", 
+        "replay-hash": "D0296961C9EA1356F727A2468967A1E2", 
+        "data-hash": "C690FC543082D35EA0AAA876B8362BEA", 
+        "label": "3.17.2", 
+        "base-version": 56787, 
+        "version": 57490
+    }, 
+    {
+        "fixed-hash": "95666060F129FD267C5A8135A8920AA2", 
+        "replay-hash": "06D650F850FDB2A09E4B01D2DF8C433A", 
+        "data-hash": "1659EF34997DA3470FF84A14431E3A86", 
+        "label": "3.18", 
+        "base-version": 57507, 
+        "version": 57507
+    }, 
+    {
+        "fixed-hash": "2CFE1B8757DA80086DD6FD6ECFF21AC6", 
+        "replay-hash": "227B6048D55535E0FF5607746EBCC45E", 
+        "data-hash": "2B06AEE58017A7DF2A3D452D733F1019", 
+        "label": "3.19", 
+        "base-version": 58400, 
+        "version": 58400
+    }, 
+    {
+        "fixed-hash": "CE1005E9B145BDFC8E5E40CDEB5E33BB", 
+        "replay-hash": "227B6048D55535E0FF5607746EBCC45E", 
+        "data-hash": "D9B568472880CC4719D1B698C0D86984", 
+        "label": "3.19.1", 
+        "base-version": 58400, 
+        "version": 58600
+    }, 
+    {
+        "fixed-hash": "D5D5798A9CCD099932C8F855C8129A7C", 
+        "replay-hash": "BB4DA41B57D490BD13C13A594E314BA4", 
+        "data-hash": "9B4FD995C61664831192B7DA46F8C1A1", 
+        "label": "4.0", 
+        "base-version": 59587, 
+        "version": 59587
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.0.1", 
+        "base-version": 59587, 
+        "version": 59729
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.0.2", 
+        "base-version": 59587, 
+        "version": 59877
+    }, 
+    {
+        "fixed-hash": "9327F9AF76CF11FC43D20E3E038B1B7A", 
+        "replay-hash": "AEA0C2A9D56E02C6B7D21E889D6B9B2F", 
+        "data-hash": "1B8ACAB0C663D5510941A9871B3E9FBE", 
+        "label": "4.1", 
+        "base-version": 60196, 
+        "version": 60196
+    }, 
+    {
+        "fixed-hash": "C53FA3A7336EDF320DCEB0BC078AEB0A", 
+        "replay-hash": "8EE054A8D98C7B0207E709190A6F3953", 
+        "data-hash": "5C021D8A549F4A776EE9E9C1748FFBBC", 
+        "label": "4.1.1", 
+        "base-version": 60321, 
+        "version": 60321
+    }, 
+    {
+        "fixed-hash": "FEE6F86A211380DF509F3BBA58A76B87", 
+        "replay-hash": "8EE054A8D98C7B0207E709190A6F3953", 
+        "data-hash": "8EE054A8D98C7B0207E709190A6F3953", 
+        "label": "4.1.2", 
+        "base-version": 60321, 
+        "version": 60604
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.1.3", 
+        "base-version": 60196, 
+        "version": 61021
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.1.4", 
+        "base-version": 60196, 
+        "version": 61545
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.2.0", 
+        "base-version": 62347, 
+        "version": 62347
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.2.1", 
+        "base-version": 62347, 
+        "version": 62848
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.2.2", 
+        "base-version": 62347, 
+        "version": 63454
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "", 
+        "label": "4.2.3", 
+        "base-version": 62347, 
+        "version": 63785
+    }, 
+    {
+        "fixed-hash": "", 
+        "replay-hash": "", 
+        "data-hash": "7C51BC7B0841EACD3535E6FA6FF2116B", 
+        "label": "4.2.4", 
+        "base-version": 63454, 
+        "version": 64128
+    }
+]
