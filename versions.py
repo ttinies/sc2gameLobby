@@ -1,6 +1,10 @@
 
 from __future__ import absolute_import
 
+from six import iteritems # python 2/3 compatibility
+from builtins import str as text # python 2/3 compatibility
+from io import BytesIO # python 2/3 compatibility
+
 from sc2gamemgr import dateFormat
 from sc2gamemgr import gameConstants as c
 
@@ -12,12 +16,12 @@ import time
 
 """
 Starcraft 2 patch/update information is copied from the following site(s):
-    http://liquipedia.net/starcraft2/Patch_4.2.3
+    http://liquipedia.net/starcraft2/Patch_4.2.3 (and links listed on the page)
 """
 
 
 ################################################################################
-def addNew(baseVersion, label, version, dataHash="", fixedHash="", replayHash=""):
+def addNew(label, version, baseVersion, dataHash="", fixedHash="", replayHash=""):
     """
     Add a new version record to the database to be tracked
     VERSION RECORD EXAMPLE:
@@ -31,45 +35,47 @@ def addNew(baseVersion, label, version, dataHash="", fixedHash="", replayHash=""
     baseVersion = int(baseVersion)
     version     = int(version)
     minVersChecks = {"base-version":baseVersion, "version":version}
-    for vCheckK,vCheckV in minVersChecks.iteritems(): # verify no conflicting values
-        maxVersion  = min([vData[vCheckK] for vData in handle.ALL_VERS_DATA])
+    if label in handle.ALL_VERS_DATA:
+        raise ValueError("given record label (%s) is already defined.  Consider performing update() for this record instead"%(label))
+    for vCheckK,vCheckV in iteritems(minVersChecks): # verify no conflicting values
+        maxVersion  = min([vData[vCheckK] for vData in handle.ALL_VERS_DATA.values()])
         if vCheckV < c.MIN_VERSION_AI_API:
             raise ValueError("version %s / %s.%s does not support the Starcraft2 API"%(baseVersion, label, version))
         if vCheckV < maxVersion: # base version cannot be smaller than newest value
-            raise ValueError("given %s (%d) cannot be smaller than newest")
-            " known %s (%d)"%(vCheckK, vCheckV, vCheckK, maxVersion)
+            raise ValueError("given %s (%d) cannot be smaller than newest known %s (%d)"%(vCheckK, vCheckV, vCheckK, maxVersion))
     uniqueValHeaders = list(c.JSON_HEADERS)
     uniqueValHeaders.remove("base-version")
     record = {"base-version" : baseVersion}
-    print("%15s : %s"%("base-version", baseVersion))
-    for k,v in zip(uniqueValHeaders, [label, version, dataHash, fixedHash, replayHash]): # must be unique
+    #print("%15s : %s (%s)"%("base-version", baseVersion, type(baseVersion)))
+    for k,v in zip(uniqueValHeaders, [label, version, dataHash, fixedHash, replayHash]): # new attr values must be unique within all handler records
         record[k] = v # convert to dict while checking each param
-        print("%15s : %s"%(k,v))
-        if v == "": continue # ignore uniqueness requirement if value is unspecified
-        if v in getattr(handle, k):
+        #print("%15s : %s (%s)"%(k,v,type(v)))
+        if not v: continue # ignore uniqueness requirement if value is unspecified
+        if v in [r[k] for r in Handler.ALL_VERS_DATA.values()]:
             raise ValueError("'%s' '%s' is in known values: %s"%(k, v, getattr(handle, k)))
             return
-    handle.save(record)
+    handle.save(new=record)
 
 
 ################################################################################
-def update(version, newValues):
-    """
-    USAGE EXAMPLES:
-        update(59729, {"fixed-hash":"123"})
-        update("3.19", {"replay-hash":"WHATEVER231"})
-    """
-    if len(newValues) == 0: raise ValueError("must provide data in paramater newValues else cannot update any record")
-    try:
-            int(version)
-            versionKey = "version"
-    except: versionKey = "label"
-    records = handle.search(version) # match record where versionKey value == version
-    if   len(records) > 1: raise ValueError("identified too many records (%d): %s"%(len(records), records))
-    elif len(records) < 1: raise ValueError("failed to identify any records given params: %s"%(recordParams))
-    record = records.pop()
-    for k,v in newValues.iteritems():   record[k] = v
-    handle.save()
+#def update(version, newValues):
+#    """
+#    USAGE EXAMPLES:
+#        update(59729, {"fixed-hash":"123"})
+#        update("3.19", {"replay-hash":"WHATEVER231"})
+#    """
+#    if len(newValues) == 0: raise ValueError("must provide data in paramater newValues else cannot update any record")
+#    try:
+#            int(version)
+#            versionKey = "version"
+#    except: versionKey = "label"
+#    records = handle.search(version) # match record where versionKey value == version
+#    if   len(records) > 1: raise ValueError("identified too many records (%d): %s"%(len(records), records))
+#    elif len(records) < 1: raise ValueError("failed to identify any records given params: %s"%(records))
+#    record = records.pop() # access the single, found record
+#    for k,v in iteritems(newValues):   record[k] = v
+#    handle._updated = True
+#    handle.save()
 
 
 ################################################################################
@@ -91,7 +97,7 @@ class Handler(object):
     ############################################################################
     @property
     def mostRecent(self):
-        records = Handler.ALL_VERS_DATA.iteritems()
+        records = iteritems(Handler.ALL_VERS_DATA)
         try: 
             label,record = max(records)
             return record
@@ -111,6 +117,9 @@ class Handler(object):
             data = json.loads( f.read() )
         self.update(data)
         self._updated = False
+        #for v,record in iteritems(Handler.ALL_VERS_DATA):
+        #    print(type(v), v)
+            #for k,v in iteritems(record):    
     ############################################################################
     def save(self, new=None, timeout=2):
         """write ALL_VERS_DATA to disk in 'pretty' format"""
@@ -124,16 +133,16 @@ class Handler(object):
             #fParts = c.FILE_GAME_VERSIONS.split('.')
             #newFile = "%s%s%s_%s.%s"%(c.FOLDER_JSON, os.sep, fParts[0], dateFormat.now(), fParts[1])
             #if not os.path.isfile(newFile):
-            print(filename)
-            print(newFile)
+            #print(filename)
+            #print(newFile)
             os.rename(filename, newFile) # backup existing version file
-        records = [(record["version"], record) for record in Handler.ALL_VERS_DATA.values()]
-        data = [r for k,r in sorted(records)] # i.e. get values sorted by version key
+        recordKeys = [(record["version"], record) for record in Handler.ALL_VERS_DATA.values()]
+        data = [r for k,r in sorted(recordKeys)] # i.e. get values sorted by version key
         start = time.time()
         while time.time()-start < timeout: # allow multiple retries if multiple processes fight over the version file
             try:
                 with open(filename, "wb") as f:
-                    f.write( json.dumps(data, indent=4) )
+                    f.write(str.encode(json.dumps(data, indent=4, sort_keys=True))) # python3 requires encoding str => bytes to write to file
                 self._updated = False
                 return
             except IOError: pass # continue waiting for file to be available
@@ -145,14 +154,14 @@ class Handler(object):
         ret = []
         for record in Handler.ALL_VERS_DATA.values():
             matchArgs = list(kwargs.keys())
-            for k,v in kwargs.iteritems(): # restrict records based on key-value match requirement
+            for k,v in iteritems(kwargs): # restrict records based on key-value match requirement
                 try:
                     if record[k] != v: break # a non-matching requirement means this record doesn't match
                 except: break # record doesn't have required key 'k'
                 matchArgs.remove(k)
             if matchArgs: continue # didn't match all required kwargs
             matchArgs = list(args)
-            for k,v in record.iteritems(): # find any record with a <value> in it
+            for k,v in iteritems(record): # find any record with a <value> in it
                 if k in matchArgs: matchArgs.remove(k)
                 if v in matchArgs: matchArgs.remove(v)
             if matchArgs: continue # didn't match all required args
@@ -163,7 +172,7 @@ class Handler(object):
     #    """identify all version records where searchVal exists (can be a regex)"""
     #    ########################################################################
     #    def checkValues(vData, regex):
-    #        for k,v in vData.iteritems():
+    #        for k,v in iteritems(vData):
     #            #if k == "base-version": continue # ignore matching this key; expect it will match 'version' key where applicable
     #            if re.search(regex, str(v)): return True
     #        return False
@@ -187,20 +196,25 @@ class Handler(object):
         if not isinstance(data, list): data = [data] # otherwise no conversion is necessary
         master = Handler.ALL_VERS_DATA
         for record in data:
-            try: label = record["label"]
+            #print(record)
+            for k,v in iteritems(record): # ensure record contents aretyped appropriately
+                try:                record[k] = int(v)
+                except ValueError:  record[k] = v
+            try: label = record["label"] # verify this record has the required 'label' key
             except KeyError:
                 raise ValueError("Must provide a valid label argument.  Given:%s%s"%(\
                     os.linesep, ("%s  "%(os.linesep)).join(
-                        ["%15s:%s"%(k,v) for k,v in kwargs.iteritems()]
+                        ["%15s:%s"%(k,v) for k,v in iteritems(kwargs)]
                     )))
-            try:    masterLabel = master[label]
+            try:    masterLabel = master[label] # identify the already existing record that matches this to-be-updated record, if any
             except KeyError: # master hasn't been defined yet
                 master[label] = record
+                self._updated = True # a new record should also be saved
                 continue
-            for k,v in record.iteritems(): # determine whether master needs to be updated
+            for k,v in iteritems(record): # determine whether master needs to be updated
                 try:
-                    if masterLabel[k] == v:  continue # found an entry in the record which is needs to be updated
-                except KeyError:             pass
+                    if masterLabel[k] == v:  continue # whether an entry in the record needs to be updated (doesn't match)
+                except KeyError:             pass # this condition means that k is a new key, so the record must be updated
                 self._updated = True
                 try:    master[label].update(record) # index each record by its label
                 except KeyError:             break
@@ -252,13 +266,4 @@ class Version(object):
     ############################################################################
     def toFilename(self):
         return re.sub("\.", "_", str(self.label))
-
-
-################################################################################
-if __name__=="__main__": # simply display the jsonData reformatted
-    for v,record in sorted(handle.ALL_VERS_DATA.iteritems()):
-        print(v)
-        for k,v in sorted(record.iteritems()):
-            print("%15s: %s"%(k,v))
-        print
 
