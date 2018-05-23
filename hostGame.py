@@ -3,16 +3,20 @@ from __future__ import absolute_import
 from __future__ import division       # python 2/3 compatibility
 from __future__ import print_function # python 2/3 compatibility
 
+from past.builtins import xrange # python 2/3 compatibility
+
 from s2clientprotocol import sc2api_pb2 as sc_pb
 
 from pysc2.lib import protocol
 from pysc2.lib import remote_controller
+from pysc2.lib.sc_process import FLAGS
 from sc2gamemgr import gameConfig
 from sc2gamemgr import gameConstants as c
 from sc2gamemgr import genericObservation as go
 from sc2gamemgr import replay
 
 import os
+import sys
 import time
 
 now = time.time
@@ -21,6 +25,7 @@ now = time.time
 ################################################################################
 def run(config, agentCallBack=go.doNothing, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
     """PURPOSE: start a starcraft2 process using the defined the config parameters"""
+    FLAGS(sys.argv)
     createReq = sc_pb.RequestCreateGame( # used to advance to "Init Game" state, when hosting
         realtime    = config.realtime,
         disable_fog = config.fogDisabled,
@@ -125,17 +130,19 @@ def run(config, agentCallBack=go.doNothing, lobbyTimeout=c.DEFAULT_TIMEOUT, debu
 
 ################################################################################
 if __name__=="__main__":
-    numOtherPlayers = 1
-    selectedRace = c.RANDOM
-    allConnects = []
-    allRaces    = [selectedRace]
+    numOtherPlayers = 1                         # vs other agent
+    allBots         = []                        # vs other agent
+    #numOtherPlayers = 0                         # vs bot only
+    #allBots         = [(c.TERRAN, c.HARDER)]    # vs bot only
+    selectedRace    = c.RANDOM
+    allConnects     = []
+    allRaces        = [selectedRace]
     for slave in gameConfig.getSlaveConfigs(numConfigs=numOtherPlayers):
         allConnects.append(slave.ports)
         allRaces.append(   slave.race)
     config = gameConfig.Config(raw=True, score=True, host=True, debug=False,
-        agentRaces=allRaces, connects=allConnects,
-        #bots=[(c.TERRAN, c.HARDER)],
+        agentRaces=allRaces, bots=allBots, connects=allConnects,
     )
     config.save()
-    run(config, agentCallBack=c.doNothing, debug=True)
+    run(config, agentCallBack=go.doNothing, debug=True)
 

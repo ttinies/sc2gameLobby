@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from __future__ import division       # python 2/3 compatibility
 from __future__ import print_function # python 2/3 compatibility
 
+from six import iteritems # python 2/3 compatibility
+
 import os
 
 from s2clientprotocol import common_pb2 as races
@@ -72,7 +74,7 @@ allowedDifficulties = { # associate print-friendly names with sc2 API enum value
 ################################################################################
 def _matchValue(value, d):
     """convert the Starcraft2 protocol value into an internally known value"""
-    for k,v in d.iteritems():
+    for k,v in iteritems(d):
         if v==value: return k # raise if provided value isn't found
     if   d==allowedTypes:           e = InvalidPlayerType
     elif d==allowedRaces:           e = InvalidRace

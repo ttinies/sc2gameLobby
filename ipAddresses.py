@@ -51,7 +51,9 @@ def getPublicIPaddress():
     """visible on public internet"""
     try:
         #httpbin.org -- site is useful to test scripts / applications.
-        my_public_ip = json.load(urlopen('http://httpbin.org/ip'))['origin'].encode('utf-8')  # takes ~0.14s
+        my_public_ip = json.load(urlopen('http://httpbin.org/ip'))['origin'] # takes ~0.14s
+        #if not isinstance(my_public_ip, str): # convert unicode => str if needed
+        #    my_public_ip = my_public_ip.encode('utf-8')
         #jsonip.com -- Seemingly the sole purpose of this domain is to return IP address in JSON.
         #my_public_ip = load(urlopen('http://jsonip.com'))['ip']  # takes ~0.24s
         #ipify.org -- Power of this service results from lack of limits (there is no rate limiting), infrastructure (placed on Heroku, with high availability in mind) and flexibility (works for both IPv4 and IPv6).

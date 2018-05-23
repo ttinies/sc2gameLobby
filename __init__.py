@@ -22,6 +22,7 @@ import os
 
 from sc2gamemgr import gameConfig
 from sc2gamemgr import gameConstants
+from sc2gamemgr import getGameData
 from sc2gamemgr import genericObservation as go
 from sc2gamemgr import hostGame
 from sc2gamemgr import joinGame

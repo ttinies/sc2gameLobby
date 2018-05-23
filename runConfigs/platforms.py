@@ -27,6 +27,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from six import iteritems # python 2/3 compatibility
+
 import copy
 import os
 import platform
@@ -55,7 +57,8 @@ class LocalBase(lib.RunConfig):
   ##############################################################################
   @property
   def mostRecentVersion(self):
-      return self.listVersions()[-1]
+      #return self.listVersions()[-1]
+      return [v[-1] for k,v in sorted(iteritems(self.versionMap()))][-1]
   ##############################################################################
   @property
   def validVersionExecutables(self):
@@ -98,7 +101,7 @@ class LocalBase(lib.RunConfig):
   def versionMap(self, debug=False):
       ret = {}
       for vKey in self.validVersionExecutables:
-          labels = [r["label"] for r in versions.handle.search(**{"base-version":vKey})]
+          labels = [r["label"] for r in versions.handle.search(**{"version":vKey})]
           ret[vKey] = labels
       return ret
       #return [versions.Version(vKey).label for vKey in self.validVersionExecutables]

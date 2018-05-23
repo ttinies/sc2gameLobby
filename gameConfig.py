@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from __future__ import division       # python 2/3 compatibility
 from __future__ import print_function # python 2/3 compatibility
 
+from six import iteritems # python 2/3 compatibility
+
 import glob
 import json
 import os
@@ -376,12 +378,12 @@ class Config(object):
     ############################################################################
     def display(self, header=""):
         h = "[%s]  "%header.upper() if header else ""
-        for k,v in sorted(self.__dict__.iteritems()):
+        for k,v in sorted(iteritems(self.__dict__)):
             print("%s%16s : %s"%(h,k,v))
     ############################################################################
     def clearCachedAttrs(self):
         """cause the internally defined parameters to be cleared, allowing them to be regenerated"""
-        for k,v in list(self.__dict__.iteritems()):
+        for k,v in list(iteritems(self.__dict__)):
             if re.search(Config.regexCache, k):
                 delattr(self, k)
     ############################################################################
@@ -440,15 +442,15 @@ class Config(object):
     def save(self):
         """save a data file such that all processes know the game that is running"""
         data = dict(self.__dict__)
-        for k,v in sorted(data.iteritems()):
+        for k,v in sorted(iteritems(data)):
             if re.search(Config.regexRaw, k): continue # ignore attrs that aren't raw data
             del data[k]
         if self.debug:
             print("saved configuration %s"%(self.name))
-            for k,v in sorted(data.iteritems()):
+            for k,v in sorted(iteritems(data)):
                 print("%15s : %s"%(k,v))
         with open(self.name, "wb") as f: # save config data file
-            f.write(json.dumps((data, self.slaveConnections), indent=4))
+            f.write(str.encode(json.dumps((data, self.slaveConnections), indent=4)))
     ############################################################################
     def saveReplay(self):
         raise NotImplementedError
@@ -460,7 +462,7 @@ class Config(object):
     ############################################################################
     def updateRaw(self, **kwargs):
         """apply all passed parameters as object attributes with values"""
-        for k,v in kwargs.iteritems():
+        for k,v in iteritems(kwargs):
             setattr(self, "_%s_"%k, v) # the double underscore signals a special, raw attr
         if kwargs: self.clearCachedAttrs() # ensure decorated methods recalculate their cached valued since raw data may have changed
 
