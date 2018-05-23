@@ -34,7 +34,7 @@ import os
 import platform
 import sys
 
-from sc2gamemgr import versions
+from sc2gameLobby import versions
 from pysc2.run_configs import lib
 
 

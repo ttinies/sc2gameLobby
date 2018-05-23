@@ -7,8 +7,8 @@ from six import iteritems # python 2/3 compatibility
 from builtins import str as text # python 2/3 compatibility
 from io import BytesIO # python 2/3 compatibility
 
-from sc2gamemgr import dateFormat
-from sc2gamemgr import gameConstants as c
+from sc2gameLobby import dateFormat
+from sc2gameLobby import gameConstants as c
 
 import json
 import os

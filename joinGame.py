@@ -8,9 +8,9 @@ import os
 from s2clientprotocol import sc2api_pb2 as sc_pb
 from pysc2.lib import protocol
 from pysc2.lib import remote_controller
-from sc2gamemgr import gameConfig
-from sc2gamemgr import gameConstants as c
-from sc2gamemgr import genericObservation as go
+from sc2gameLobby import gameConfig
+from sc2gameLobby import gameConstants as c
+from sc2gameLobby import genericObservation as go
 
 
 ################################################################################

@@ -13,12 +13,12 @@ import random
 import re
 import time
 
-from sc2gamemgr import dateFormat
-from sc2gamemgr import gameConstants as c
-from sc2gamemgr import ipAddresses
+from sc2gameLobby import dateFormat
+from sc2gameLobby import gameConstants as c
+from sc2gameLobby import ipAddresses
 #import mapData
-from sc2gamemgr import runConfigs
-from sc2gamemgr import versions
+from sc2gameLobby import runConfigs
+from sc2gameLobby import versions
 
 
 """

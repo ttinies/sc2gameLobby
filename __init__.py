@@ -20,14 +20,14 @@ from __future__ import print_function # python 2/3 compatibility
 
 import os
 
-from sc2gamemgr import gameConfig
-from sc2gamemgr import gameConstants
-from sc2gamemgr import getGameData
-from sc2gamemgr import genericObservation as go
-from sc2gamemgr import hostGame
-from sc2gamemgr import joinGame
-from sc2gamemgr import replay
-from sc2gamemgr import versions
+from sc2gameLobby import gameConfig
+from sc2gameLobby import gameConstants
+from sc2gameLobby import getGameData
+from sc2gameLobby import genericObservation as go
+from sc2gameLobby import hostGame
+from sc2gameLobby import joinGame
+from sc2gameLobby import replay
+from sc2gameLobby import versions
 
 
 ################################################################################

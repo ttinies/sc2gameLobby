@@ -25,7 +25,7 @@ from __future__ import print_function
 
 #from pysc2.run_configs import platforms
 #from pysc2 import run_configs
-from sc2gamemgr.runConfigs import platforms
+from sc2gameLobby.runConfigs import platforms
 from pysc2.run_configs import lib
 
 

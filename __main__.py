@@ -24,7 +24,7 @@ from argparse import ArgumentParser
 
 import sys
 
-from sc2gamemgr import versions
+from sc2gameLobby import versions
 
 
 ################################################################################

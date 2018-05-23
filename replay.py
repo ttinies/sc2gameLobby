@@ -5,8 +5,8 @@ from __future__ import print_function # python 2/3 compatibility
 
 import os
 
-from sc2gamemgr import dateFormat
-from sc2gamemgr import gameConstants as c
+from sc2gameLobby import dateFormat
+from sc2gameLobby import gameConstants as c
 
 
 ################################################################################
