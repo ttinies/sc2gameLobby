@@ -201,7 +201,7 @@
     },
     {
         "base-version": 64469,
-        "data-hash": "",
+        "data-hash": "C92B3E9683D5A59E08FC011F4BE167FF",
         "fixed-hash": "",
         "label": "4.3.0",
         "replay-hash": "",
@@ -214,5 +214,13 @@
         "label": "4.3.1",
         "replay-hash": "",
         "version": 65094
+    },
+    {
+        "base-version": 65384,
+        "data-hash": "B6D73C85DFB70F5D01DEABB2517BF11C",
+        "fixed-hash": "",
+        "label": "4.3.2",
+        "replay-hash": "",
+        "version": 65384
     }
 ]
