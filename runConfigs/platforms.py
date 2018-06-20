@@ -36,6 +36,7 @@ import sys
 
 from sc2gameLobby import versions
 from pysc2.run_configs import lib
+from pysc2.lib import sc_process
 
 
 ################################################################################
@@ -57,8 +58,10 @@ class LocalBase(lib.RunConfig):
   ##############################################################################
   @property
   def mostRecentVersion(self):
-      #return self.listVersions()[-1]
-      return [v[-1] for k,v in sorted(iteritems(self.versionMap()))][-1]
+      versMap = self.versionMap()
+      orderedVersions = sorted(list(iteritems(versMap)))
+      #vers = [v[-1] for k,v in sorted(iteritems(self.versionMap()))]
+      return orderedVersions[-1][-1]
   ##############################################################################
   @property
   def validVersionExecutables(self):
@@ -75,11 +78,11 @@ class LocalBase(lib.RunConfig):
   def exec_path(self, baseVersion=None):
     """Get the exec_path for this platform. Possibly find the latest build."""
     if not os.path.isdir(self.data_dir):
-        raise lib.SC2LaunchError("Install Starcraft II at %s or set the SC2PATH environment variable"%(self.data_dir))
+        raise sc_process.SC2LaunchError("Install Starcraft II at %s or set the SC2PATH environment variable"%(self.data_dir))
     if baseVersion==None: # then select most recent version's baseVersion
         mostRecent = versions.handle.mostRecent
         if mostRecent:  return mostRecent["base-version"]
-        raise lib.SC2LaunchError(
+        raise sc_process.SC2LaunchError(
             "When requesting a versioned executable path without specifying base-version, expected "
             "to find StarCraft II versions installed at %s."%(self.versionsDir))
     elif isinstance(baseVersion, versions.Version):
@@ -90,7 +93,7 @@ class LocalBase(lib.RunConfig):
     baseVersExec = os.path.join(self.versionsDir, "Base%s"%baseVersion, self._exec_name)
     if os.path.isfile(baseVersExec):
         return baseVersExec # if baseVersion in Versions subdir is valid, it is the correct executable
-    raise lib.SC2LaunchError("Specified baseVersion %s does not exist at %s.%s    available: %s"%(\
+    raise sc_process.SC2LaunchError("Specified baseVersion %s does not exist at %s.%s    available: %s"%(\
         baseVersion, baseVersExec, os.linesep, " ".join(sorted(self.versionMap().keys())) ))
   ##############################################################################
   def listVersions(self):
@@ -106,13 +109,20 @@ class LocalBase(lib.RunConfig):
       return ret
       #return [versions.Version(vKey).label for vKey in self.validVersionExecutables]
   ##############################################################################
-  #def start(self, game_version=None, data_version=None, **kwargs):
-  #  """Launch the game."""
-  #  game_version = game_version or FLAGS.sc2_version
-  #  if game_version and not data_version:
-  #      data_version = get_version(game_version)[1]
-  #  return super(LocalBase, self).start(game_version=game_version,
-  #                                      data_version=data_version, **kwargs)
+  def start(self, version=None, **kwargs):#game_version=None, data_version=None, **kwargs):
+    """Launch the game."""
+    if not version:
+        version = self.mostRecentVersion
+    pysc2Version = lib.Version( # convert to pysc2 Version
+        version.version,
+        version.baseVersion,
+        version.dataHash,
+        version.fixedHash)
+    return sc_process.StarcraftProcess(
+                self,
+                exec_path=self.exec_path(version.baseVersion),
+                version=pysc2Version,
+                **kwargs)
 
 
 ################################################################################
@@ -121,7 +131,7 @@ class Windows(LocalBase):
   ##############################################################################
   def __init__(self):
     super(Windows, self).__init__(
-        os.environ.get("SC2PATH", "C:/Program Files (x86)/StarCraft II"),
+        os.environ.get("SC2PATH", "C:/Program Files (x86)/StarCraft II").strip('"'),
         "SC2_x64.exe", "Support64")
   ##############################################################################
   @classmethod
