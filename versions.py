@@ -237,9 +237,11 @@ handle = Handler()
 
 ################################################################################
 class Version(object):
+    """Represent a single version of the game settings"""
     ############################################################################
     def __init__(self, versionVal=None):
         if versionVal: # get specific version
+            if isinstance(versionVal, list): versionVal = max(versionVal)
             records = handle.search(versionVal)
             if   len(records) > 1: raise ValueError("identified too many records (%d): %s"%(len(records), records))
             elif len(records) < 1: raise ValueError("first collect and update version information for version: %s"%(versionVal))
