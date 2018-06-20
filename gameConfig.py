@@ -21,10 +21,11 @@ from sc2gameLobby import ipAddresses
 from sc2gameLobby import runConfigs
 from sc2gameLobby import versions
 
-from sc2players import getPlayer, PlayerRecord, PlayerPreGame
+from sc2players import getPlayer, buildPlayer, PlayerRecord, PlayerPreGame
+from sc2players import constants as playerConstants
 from sc2ladderMgmt.ladders import Ladder
-from sc2gameMapRepo.functions import selectMap
-from sc2gameMapRepo.mapRecord import MapRecord
+from sc2maptool.functions import selectMap
+from sc2maptool.mapRecord import MapRecord
 
 """
 establish a configuration file containing game information such that other
@@ -213,8 +214,8 @@ class Config(object):
     ############################################################################
     @property
     def interfaces(self):
-        return (self.showRaw    , self.showScore,
-                self.showFeature, self.showRender)
+        return (self.raw    , self.score,
+                self.feature, self.render)
     ############################################################################
     @property
     def isHost(self):
@@ -228,8 +229,13 @@ class Config(object):
     @property
     def mapData(self):
         """the raw, binary contents of the Starcraft2 map file"""
-        with open(self.themap.path, "rb") as f:
-            return f.read()
+        return self.themap.rawData
+        #with open(self.themap.path, "rb") as f:
+        #    return f.read()
+    ############################################################################
+    @property
+    def mapLocalPath(self):
+        return self.themap.path
     ############################################################################
     @property
     def name(self):
@@ -330,8 +336,10 @@ class Config(object):
             elif k == "players":
                 newPs = []
                 for i,p in enumerate(v):
-                    if isinstance(p, PlayerPreGame):    newPs.append( (p.name, p.type.type, p.initCmd, p.selectedRace.type, self.numObserve) )
-                    else:                               newPs.append( (p.name, p.type.type, p.initCmd) )
+                    try:    diff = p.difficulty.type
+                    except: diff = p.difficulty
+                    if isinstance(p, PlayerPreGame):    newPs.append( (p.name, p.type.type, p.initCmd, diff, p.rating, p.selectedRace.type, self.numObserve, p.playerID) )
+                    else:                               newPs.append( (p.name, p.type.type, p.initCmd, diff, p.rating) )
                 # TODO -- handle if type or observers params are not available (i.e. if a simple PlayerRecord, not a PlayerPreGame
                 ret[k] = newPs
                 continue
@@ -349,22 +357,18 @@ class Config(object):
         if self.version and not isinstance(self.version, versions.Version):     self.version    = versions.Version(self.version)
         if self.ladder  and not isinstance(self.ladder, Ladder):                self.ladder     = Ladder(self.ladder)
         for i,player in enumerate(self.players): # iterate over all players
-            if not isinstance(player, PlayerRecord):                            self.players[i] = self.inflatePlayer(*player)
+            if       isinstance(player, str):                                   self.players[i] = getPlayer(player)
+            elif not isinstance(player, PlayerRecord):                          self.players[i] = buildPlayer(*player)
         if self.mode    and not isinstance(self.mode, types.GameModes):         self.mode       = types.GameModes(self.mode)
         if self.themap  and not isinstance(self.themap, MapRecord):             self.themap     = selectMap(name=self.themap)
-    ############################################################################
-    def inflatePlayer(self, name, ptype, cmd, race=None, obs=False):
-        ret = PlayerRecord(name=name, type=ptype, initCmd=cmd)
-        if race or obs:     return PlayerPreGame(ret, selectedRace=race, observe=obs)
-        else:               return ret
     ############################################################################
     def launchApp(self, fullScreen=True, **kwargs):
         """Launch Starcraft2 process in the background using this configuration"""
         app = self.installedApp
         # TODO -- launch host in window minimized mode
-        vers = self.version
-        proc = app.start(game_version=vers.baseVersion, data_version=vers.dataHash,
-            port=self.ports[0], full_screen=fullScreen, verbose=self.debug, **kwargs)
+        vers = self.getVersion()
+        proc = app.start(version=vers,#game_version=vers.baseVersion, data_version=vers.dataHash,
+            port=self.getPorts()[0], full_screen=fullScreen, verbose=self.debug, **kwargs)
         return proc
     ############################################################################
     def load(self, cfgFile=None, timeout=None):
@@ -395,8 +399,11 @@ class Config(object):
             print("configuration loaded: %s"%(self.name))
             self.display()
     ############################################################################
-    #def updateID(self, value):
-    #    setattr(self, "_playerID_", value)
+    def updateID(self, value, player=None):
+        """ensure this player's player ID is specified by the host client"""
+        if player == None:
+            player = self.whoAmI()
+        player.playerID = value
     ############################################################################
     def loadJson(self, data):
         """convert the json data into updating this obj's attrs"""
@@ -473,4 +480,17 @@ class Config(object):
             print("saved configuration %s"%(self.name))
             for k,v in sorted(iteritems(self.attrs)):
                 print("%15s : %s"%(k,v))
+    ############################################################################
+    def whoAmI(self):
+        """return the player object that owns this configuration"""
+        self.inflate() # ensure self.players contains player objects
+        if self.thePlayer:
+            for p in self.players:
+                if p.name != self.thePlayer: continue
+                return p
+        elif len(self.players) == 1:
+            ret = self.players[0]
+            self.thePlayer = ret.name # remember this for the future in case more players are added
+            return ret
+        raise Exception("could not identify which player this is given %s (%s)"%(self.players, self.thePlayer))
 
