@@ -9,6 +9,7 @@ from sc2common.constants import *
 
 ################################################################################
 class TimeoutExceeded(Exception): pass
+class UknownPlayer(Exception): pass
 
 ################################################################################
 # file/folder information
