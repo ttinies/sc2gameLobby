@@ -4,9 +4,14 @@ from sc2gameLobby import gameConstants as c
 
 ################################################################################
 def tieDetermined(cfg):
-    ret = {}
-    for p in cfg.players:
-        pass
+    """all players tied their results"""
+    return assignValue(cfg, c.RESULT_TIE, c.RESULT_TIE)
+
+
+################################################################################
+def launchFailure(cfg):
+    """report that the match failed to start as anticipated"""
+    return assignValue(cfg, c.RESULT_UNDECIDED, c.RESULT_UNDECIDED)
 
 
 ################################################################################
