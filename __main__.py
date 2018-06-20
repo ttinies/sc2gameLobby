@@ -32,10 +32,12 @@ from sc2players import getPlayer, getKnownPlayers, PlayerPreGame, PlayerRecord
 from sc2ladderMgmt import getLadder, getKnownLadders
 from sc2maptool.functions import selectMap, filterMapNames
 from sc2gameLobby.gameConfig import Config
-from sc2gameLobby import gameConstants as c
-from sc2gameLobby import host, join
-from sc2gameLobby import versions
 from sc2gameLobby import connectToServer
+from sc2gameLobby import gameConstants as c
+from sc2gameLobby import genericObservation as go
+from sc2gameLobby import host, join
+from sc2gameLobby import resultHandler as rh
+from sc2gameLobby import versions
 
 
 ################################################################################
@@ -167,13 +169,31 @@ if __name__ == "__main__":
         matchCfg.display()
         print()
         ### launch game; collect results ###
+        thisPlayer = matchCfg.whoAmI()
+        agentStuff = None # preserve python agent info (if applicable)
+        result     = None
+        replayData = ""
+        callBack   = go.doNothing # play with human control only (default) 
+        if thisPlayer.initCmd: # launch the desired player appropriately
+            if re.search("^[\w\.]$", thisPlayer.initCmd): # found a python command
+                callableFromStr = lambda strV: getattr(sys.modules[__name__], strV)
+                agentStuff = callableFromStr(thisPlayer.initCmd) # conv to callable
+                callBack = agentStuff[0] # callback is first item
+                raise NotImplementedError("TODO -- standardize how python agents are initialized and invoked on callback?")
+            else: # launch separate process that manages the agent and results
+                p = subprocess.Popen(thisPlayer.initCmd.split())
+                p.communicate()
+                if p.returncode: # otherwise rely on client to send game result to server (else server catches the non-reporting offender)
+                    httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
+                    if not httpResp.ok: exitStatement(httpResp.text)
+                sys.exit(p.returncode) # process can't report game result if it crashes
         try:
             if matchCfg.host: # host contains details of the host to connect to
-                  result,replayData = join(matchCfg, debug=True) # join game on host
-            else: result,replayData = host(matchCfg, debug=True) # no value means this machine is hosting
+                  result,replayData = join(matchCfg, agentCallBack=callBack, debug=True) # join game on host
+            else: result,replayData = host(matchCfg, agentCallBack=callBack, debug=True) # no value means this machine is hosting
         except c.TimeoutExceeded as e: # results in a failed match and is recorded as a disconnect
             print(e)
-            result = {p.name : -1 for p in matchCfg.players}
+            result = rh.launchFailure(matchCfg)
         ### simulate sending match results ###
             #results = []
             #from numpy.random import choice
