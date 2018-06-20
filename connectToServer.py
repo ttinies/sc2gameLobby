@@ -46,16 +46,11 @@ def ladderPlayerInfo(cfg, playerName, getMatchHistory=False):
     """obtain information housed on the ladder about playerName"""
     payload = json.dumps([playerName, getMatchHistory]) # if playerName == None, info on all players is retrieved
     ladder = cfg.ladder
-    x = requests.post(
+    return requests.post(
         url  = c.URL_BASE%(ladder.ipAddress, ladder.serverPort, "playerstats"),
         data = payload,
         #headers=headers,
     )
-    #print("z.text", x.text) # this holds the response content
-    #print("z.ok", x.ok)
-    #print("z.reason", x.reason)
-    if x.ok:    return x.json()
-    else:       return x.ok
 
 
 ################################################################################
@@ -63,22 +58,18 @@ def reportMatchCompletion(cfg, results, replayData):
     """send information back to the server about the match's winners/losers"""
     payload = json.dumps([cfg.flatten(), results, replayData])
     ladder = cfg.ladder
-    x = requests.post(
+    return requests.post(
         url  = c.URL_BASE%(ladder.ipAddress, ladder.serverPort, "matchfinished"),
         data = payload,
         #headers=headers,
     )
-    print(x.reason)
-    print(x.text)
-    if x.ok:    return x.json()
-    else:       return x.ok
 
 
 ################################################################################
 def sendMatchRequest(cfg):
     payload = cfg.toJson()
     ladder = cfg.ladder
-    x = requests.post(
+    return requests.post(
         # force error #url  = c.URL_BASE%(ladder.ipAddress, ladder.serverPort, "polls"),
         url  = c.URL_BASE%(ladder.ipAddress, ladder.serverPort, "newmatch"),
         data = payload,
@@ -91,17 +82,4 @@ def sendMatchRequest(cfg):
 #    print("x.text", x.text) # this holds the response content
 #    print("x.ok", x.ok)
 #    print("x.reason", x.reason)
-    if not x.ok:    return x.ok
-    data = x.json()
-    for pData in data["players"]: # if player matchup doesn't exist locally, retrieve server information and define the player
-        pName = pData[0]
-        try:    getPlayer(pName) # test whether player exists locally
-        except ValueError: # player pName is not defined locally
-            y = ladderPlayerInfo(cfg, pName)
-            settings = y[0][0] # settings of player[0]
-            del settings["created"]
-            addPlayer(settings)
-    cfg.loadJson(data)
-    cfg.display()
-    return cfg
 
