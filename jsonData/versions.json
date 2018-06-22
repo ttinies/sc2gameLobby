@@ -222,5 +222,13 @@
         "label": "4.3.2",
         "replay-hash": "",
         "version": 65384
+    },
+    {
+        "base-version": 65895,
+        "data-hash": "",
+        "fixed-hash": "",
+        "label": "4.4.0",
+        "replay-hash": "",
+        "version": 65895
     }
 ]
