@@ -30,7 +30,7 @@ def playerJoin(hostCfg, config, agentCallBack=go.doNothing, debug=False):
     joinReq.server_ports.game_port  = gameP
     joinReq.server_ports.base_port  = baseP
     joinReq.shared_port             = sharedP
-    for myGP, myBP in hostCfg.slaveConnections:
+    for myGP, myBP in hostCfg.slavePorts:
         joinReq.client_ports.add(game_port=myGP, base_port=myBP)
     if config.numAgents:
         playerType   = c.PARTICIPANT
