@@ -17,6 +17,6 @@ class forwardObservation(object):
     def __init__(self, pushQueue):
         self.pushQ = pushQueue
     ############################################################################
-    def __call__(self, *args):
-        map(self.pushQ.put, args)
+    def __call__(self, observation):
+        self.pushQ.put(observation)
 
