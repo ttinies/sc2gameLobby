@@ -27,5 +27,6 @@ FOLDER_IGNORED_MAPS     = ["Melee", "mini_games", "Test"]
 # misc
 MIN_REQUIRED_PLAYERS    = 2   # players
 DEFAULT_TIMEOUT         = 120 # seconds
+REPLAY_SAVE_FREQUENCY   = 10  # seconds
 URL_BASE                = "http://%s:%s/%s/"
 
