@@ -45,7 +45,7 @@ def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
         playerObj = PlayerPreGame(player)
         if playerObj.isComputer:
             reqPlayer.difficulty    = playerObj.difficulty.gameValue()
-        reqPlayer.type              = t.PlayerControls(playerObj.control()).gameValue()
+        reqPlayer.type              = t.PlayerControls(playerObj.control).gameValue()
         reqPlayer.race              = playerObj.selectedRace.gameValue()
     interface = sc_pb.InterfaceOptions()
     raw,score,feature,rendered = config.interfaces
@@ -77,12 +77,12 @@ def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
         if debug: print("Starcraft2 is waiting for %d player(s) to join. (%s)"%(config.numAgents, controller.status)) # status: init_game
         playerID = controller.join_game(joinReq).player_id # SC2APIProtocol.RequestJoinGame
         config.updateID(playerID)
-        config.save() # "publish" the configuration file for other procs
-        print("[HOSTGAME] %d %s"%(playerID, config))
-        try:    agentCallBack(config.name) # send the configuration to the controlling agent's pipeline
-        except Exception as e:
-            print("ERROR: agent %s crashed during init: %s (%s)"%(thisPlayer.initCmd, e, type(e)))
-            return (rh.playerCrashed(config), "") # no replay information to get
+        #config.save() # "publish" the configuration file for other procs
+        print("[HOSTGAME] player #%d %s"%(playerID, config))
+        #try:    agentCallBack(config.name) # send the configuration to the controlling agent's pipeline
+        #except Exception as e:
+        #    print("ERROR: agent %s crashed during init: %s (%s)"%(thisPlayer.initCmd, e, type(e)))
+        #    return (rh.playerCrashed(config), "") # no replay information to get
         startWaitTime = now()
         knownPlayers  = []
         numExpectedPlayers = config.numGameClients # + len(bots) : bots don't need to join; they're run by the host process automatically
@@ -116,8 +116,13 @@ def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
                         break
                 if pID: raise c.UknownPlayer("could not match %s %s %s to any "
                     "existing player of %s"%(pID, pTyp, rReq, config.players))
-        if debug: print("all %d player(s) found; game is " # status: init_game
+        if debug: print("all %d player(s) found; game has " # status: init_game
             "started! (%s)"%(numExpectedPlayers, controller.status))
+        config.save() # "publish" the configuration file for other procs
+        try:    agentCallBack(config.name) # send the configuration to the controlling agent's pipeline
+        except Exception as e:
+            print("ERROR: agent %s crashed during init: %s (%s)"%(thisPlayer.initCmd, e, type(e)))
+            return (rh.playerCrashed(config), "") # no replay information to get
         while True:  # wait for game to end while players/bots do their thing
             obs = getGameState()
             result = obs.player_result
