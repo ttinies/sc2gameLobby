@@ -26,6 +26,7 @@ import importlib
 import json
 import os
 import re
+import requests
 import subprocess
 import sys
 import time
@@ -34,6 +35,7 @@ from sc2common import types as t
 from sc2players import getPlayer, getKnownPlayers, PlayerPreGame, PlayerRecord
 from sc2ladderMgmt import getLadder, getKnownLadders
 from sc2maptool.functions import selectMap, filterMapNames
+from sc2gameLobby.__version__ import __version__
 from sc2gameLobby.gameConfig import Config
 from sc2gameLobby import connectToServer
 from sc2gameLobby import gameConstants as c
@@ -45,8 +47,16 @@ from sc2gameLobby import versions
 
 ################################################################################
 def exitStatement(msg, code=1):
-    print("ERROR: %s"%msg)
-    sys.exit(c)
+    printMsg = msg
+    if code: printMsg = "ERROR: %s"%(msg)
+    print("%s%s"%(os.linesep, printMsg))
+    sys.exit(code)
+
+
+################################################################################
+def badConnect(ladder, code=2):
+    exitStatement("A connection could not be made. %s may not be available or "
+    "you may not be connected to the internet."%(ladder), code=code)
 
 
 ################################################################################
@@ -87,8 +97,8 @@ if __name__ == "__main__":
     ALLOWED_PLAYERS = list(getKnownPlayers())
     ALLOWED_LADDERS = list(getKnownLadders())
     ALLOWED_MAPS    = filterMapNames("", closestMatch=False)
-    usage_def = ""
-    parser = ArgumentParser(usage_def)
+    description = "PURPOSE: front-end interface to easily and reliably match against opponents and run Starcraft2 opponents."
+    parser = ArgumentParser(description=description, epilog="version: %s"%__version__)
     gameOptions = parser.add_argument_group('game lobby actions')
     gameOptions.add_argument("--nogui"          , action="store_true"   , help="launch game directly using command-line arguments formatted as key=value.")
     gameOptions.add_argument("--search"         , default=""            , help="retrieve player information from the ladder (comma separated names)", metavar="PLAYERS")
@@ -133,7 +143,8 @@ if __name__ == "__main__":
     if options.search or options.history:
         if not options.player: options.player = options.search
         cfg = getLaunchConfig(options)
-        httpResp = connectToServer.ladderPlayerInfo(cfg, options.search, getMatchHistory=options.history)
+        try: httpResp = connectToServer.ladderPlayerInfo(cfg, options.search, getMatchHistory=options.history)
+        except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
         if not httpResp.ok: exitStatement(httpResp.text)
         printStr = "%15s : %s"
         for playerAttrs, playerHistory in httpResp.json():
@@ -152,7 +163,8 @@ if __name__ == "__main__":
             cfg.display()
             print(cfg.whoAmI().initCmd)
             print()
-        httpResp = connectToServer.sendMatchRequest(cfg)
+        try:    httpResp = connectToServer.sendMatchRequest(cfg)
+        except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
         ### cancel match request ### (would have to be issued as subprocess after match request, but before a match is assigned
             #import time
             #time.sleep(1)
@@ -162,8 +174,9 @@ if __name__ == "__main__":
         for pData in data["players"]: # if player matchup doesn't exist locally, retrieve server information and define the player
             pName = pData[0]
             try:    getPlayer(pName) # test whether player exists locally
-            except ValueError: # player pName is not defined locally
-                y = connectToServer.ladderPlayerInfo(cfg, pName)
+            except ValueError: # player w/ name pName is not defined locally
+                try: y = connectToServer.ladderPlayerInfo(cfg, pName) # get player info from ladder
+                except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
                 settings = y[0][0] # settings of player[0]
                 del settings["created"] # creation data is retained locally
                 addPlayer(settings) # ensures that loading json + inflation succeeds
@@ -174,50 +187,47 @@ if __name__ == "__main__":
         print()
         ### launch game; collect results ###
         thisPlayer = matchCfg.whoAmI()
-        agentStuff = None # preserve python agent info (if applicable)
+        agentStuff = [] # preserve python agent info (if applicable)
         result     = None
         replayData = ""
         callBack   = go.doNothing # play with human control only (default) 
         if thisPlayer.initCmd: # launch the desired player appropriately
-            if re.search("^\w+\.[\w\.]+$", thisPlayer.initCmd): # found a python command
-                #print(thisPlayer.initCmd)
+            if re.search("^\w+\.[\w\.]+$", thisPlayer.initCmd): # found a python command; extract callback and agent process/object stuff
                 parts = thisPlayer.initCmd.split(".")
-                moduleName = parts[0]#re.findall("^\w+", thisPlayer.initCmd)[0]
-                thing = importlib.import_module(moduleName)
+                moduleName = parts[0]
                 try:
+                    thing = importlib.import_module(moduleName)
                     for part in parts[1:]: # access callable defined by the agent
                         thing = getattr(thing, part)
                     agentStuff = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process 
                     callBack = agentStuff[0] # callback is always first item in list
-                #except ModuleNotFoundError as e:
-                #    exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
-                except AttributeError as e:
-                    exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
-                except Exception as e:
-                    exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
-                #print(moduleName)
-                #print(module)
-                #callableFromStr = lambda strV: getattr(sys.modules[__name__], strV)
-                #print(callableFromStr)
-                #print(callableFromStr("sc2common"))
-                #callableFromStr(thisPlayer.initCmd) # conv to callable
-                #exitStatement("TODO -- standardize how python agents are initialized and invoked on callback?")
+                except ModuleNotFoundError as e:    exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
+                except AttributeError as e:         exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
+                except Exception as e:              exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
             else: # launch separate process that manages the agent and results
                 p = subprocess.Popen(thisPlayer.initCmd.split())
                 p.communicate()
+                msg = "Command-line bot %s finished normally."%(thisPlayer)
                 if p.returncode: # otherwise rely on client to send game result to server (else server catches the non-reporting offender)
-                    httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
-                    if not httpResp.ok: exitStatement(httpResp.text)
-                sys.exit(p.returncode) # process can't report game result if it crashes
+                    msg = "Command-line bot %s crashed (%d)."%(thisPlayer, p.returncode)
+                    try: # while non-python agent manages communication including match completion reporting to ladder server, some crash events can be reported by this process
+                        httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
+                        if not httpResp.ok: msg += " %s!"%(httpResp.text)
+                    except requests.exceptions.ConnectionError as e: # process can't report game result if it crashes
+                        msg += " lost prior connection to %s!"%(cfg.ladder)
+                exitStatement(msg, code=p.returncode)
         try:
             if matchCfg.host: # host contains details of the host to connect to
-                  result,replayData = join(matchCfg, agentCallBack=callBack, debug=True) # join game on host
-            else: result,replayData = host(matchCfg, agentCallBack=callBack, debug=True) # no value means this machine is hosting
-        except c.TimeoutExceeded as e: # results in a failed match and is recorded as a disconnect
+                  func = join # join game on host when host details are provided
+            else: func = host # no value means this machine is hosting
+            result,replayData = func(matchCfg, agentCallBack=callBack, debug=False)
+        except c.TimeoutExceeded as e: # match failed to launch
             print(e)
-            result = rh.launchFailure(matchCfg)
+            result = rh.launchFailure(matchCfg) # report UNDECIDED results
         finally:
-            agentStuff = None
+            for item in agentStuff: # eradicate all agent's processes
+                if hasattr(item, "terminate"): item.terminate()
+            agentStuff = []
         ### simulate sending match results ###
             #results = []
             #from numpy.random import choice
@@ -231,16 +241,21 @@ if __name__ == "__main__":
             #sleep(1.5)
             #results = dict(results)
             #print(json.dumps(results, indent=4))
-            #httpResp = connectToServer.reportMatchCompletion(matchCfg, results, "")
-            #if not httpResp.ok: exitStatement(httpResp.text)
+            #try:
+            #    httpResp = connectToServer.reportMatchCompletion(matchCfg, results, "")
+            #    if not httpResp.ok: exitStatement(httpResp.text)
+            #except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
             #print(httpResp.json())
         ### send actual results ###
-        #if result != None: # regular result is expected to be reported by
-        #    print("FINAL RESULT:")
-        #    print(json.dumps(result, indent=4))
-        #    httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
-        #    if not httpResp.ok: exitStatement(httpResp.text)
-        #    print(httpResp.json())
+        replaySize = len(replayData) if replayData else 0
+        print("FINAL RESULT: (%d)"%(replaySize))
+        print(json.dumps(result, indent=4))
+        if result != None: # regular result is expected to be reported by
+            try:
+                httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
+                if not httpResp.ok: exitStatement(httpResp.text)
+            except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
+            print(httpResp.json()) # also display effective rating changes 
     elif options.add:       versions.addNew(*options.add.split(','))
     elif options.update:
         keys = [
