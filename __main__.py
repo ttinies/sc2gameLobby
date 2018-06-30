@@ -22,8 +22,11 @@ from __future__ import print_function # python 2/3 compatibility
 from six import iteritems # python 2/3 compatibility
 from argparse import ArgumentParser
 
+import importlib
 import json
 import os
+import re
+import subprocess
 import sys
 import time
 
@@ -41,9 +44,9 @@ from sc2gameLobby import versions
 
 
 ################################################################################
-def exitStatement(msg):
+def exitStatement(msg, code=1):
     print("ERROR: %s"%msg)
-    sys.exit(1)
+    sys.exit(c)
 
 
 ################################################################################
@@ -147,6 +150,7 @@ if __name__ == "__main__":
         if False: # only display in debug/verbose mode?
             print("REQUESTED CONFIGURATION")
             cfg.display()
+            print(cfg.whoAmI().initCmd)
             print()
         httpResp = connectToServer.sendMatchRequest(cfg)
         ### cancel match request ### (would have to be issued as subprocess after match request, but before a match is assigned
@@ -175,11 +179,29 @@ if __name__ == "__main__":
         replayData = ""
         callBack   = go.doNothing # play with human control only (default) 
         if thisPlayer.initCmd: # launch the desired player appropriately
-            if re.search("^[\w\.]$", thisPlayer.initCmd): # found a python command
-                callableFromStr = lambda strV: getattr(sys.modules[__name__], strV)
-                agentStuff = callableFromStr(thisPlayer.initCmd) # conv to callable
-                callBack = agentStuff[0] # callback is first item
-                raise NotImplementedError("TODO -- standardize how python agents are initialized and invoked on callback?")
+            if re.search("^\w+\.[\w\.]+$", thisPlayer.initCmd): # found a python command
+                #print(thisPlayer.initCmd)
+                parts = thisPlayer.initCmd.split(".")
+                moduleName = parts[0]#re.findall("^\w+", thisPlayer.initCmd)[0]
+                thing = importlib.import_module(moduleName)
+                try:
+                    for part in parts[1:]: # access callable defined by the agent
+                        thing = getattr(thing, part)
+                    agentStuff = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process 
+                    callBack = agentStuff[0] # callback is always first item in list
+                #except ModuleNotFoundError as e:
+                #    exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
+                except AttributeError as e:
+                    exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
+                except Exception as e:
+                    exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
+                #print(moduleName)
+                #print(module)
+                #callableFromStr = lambda strV: getattr(sys.modules[__name__], strV)
+                #print(callableFromStr)
+                #print(callableFromStr("sc2common"))
+                #callableFromStr(thisPlayer.initCmd) # conv to callable
+                #exitStatement("TODO -- standardize how python agents are initialized and invoked on callback?")
             else: # launch separate process that manages the agent and results
                 p = subprocess.Popen(thisPlayer.initCmd.split())
                 p.communicate()
@@ -194,6 +216,8 @@ if __name__ == "__main__":
         except c.TimeoutExceeded as e: # results in a failed match and is recorded as a disconnect
             print(e)
             result = rh.launchFailure(matchCfg)
+        finally:
+            agentStuff = None
         ### simulate sending match results ###
             #results = []
             #from numpy.random import choice
@@ -211,12 +235,12 @@ if __name__ == "__main__":
             #if not httpResp.ok: exitStatement(httpResp.text)
             #print(httpResp.json())
         ### send actual results ###
-        if result != None: # regular result is expected to be reported by
-            print("FINAL RESULT:")
-            print(json.dumps(result, indent=4))
-            httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
-            if not httpResp.ok: exitStatement(httpResp.text)
-            print(httpResp.json())
+        #if result != None: # regular result is expected to be reported by
+        #    print("FINAL RESULT:")
+        #    print(json.dumps(result, indent=4))
+        #    httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
+        #    if not httpResp.ok: exitStatement(httpResp.text)
+        #    print(httpResp.json())
     elif options.add:       versions.addNew(*options.add.split(','))
     elif options.update:
         keys = [
