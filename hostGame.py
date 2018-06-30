@@ -32,7 +32,9 @@ now = time.time
 ################################################################################
 def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
     """PURPOSE: start a starcraft2 process using the defined the config parameters"""
-    FLAGS(sys.argv)
+    FLAGS(sys.argv) # ignore pysc2 command-line handling (eww)
+    log = protocol.logging.logging
+    log.disable(log.CRITICAL) # disable pysc2 logging
     thisPlayer = config.whoAmI()
     createReq = sc_pb.RequestCreateGame( # used to advance to "Init Game" state, when hosting
         realtime    = config.realtime,
@@ -67,8 +69,8 @@ def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
         joinReq.client_ports.add(game_port=slaveGP, base_port=slaveBP)
     if debug: print("Starcraft2 game process is launching (fullscreen=%s)."%(config.fullscreen))
     controller  = None # the object that manages the application process
-    finalResult = None # the observed results of the match
-    replayData  = None # complete raw replay data for the match
+    finalResult = rh.playerSurrendered(config) # default to this player losing if somehow a result wasn't acquired normally
+    replayData  = b'' # complete raw replay data for the match
     with config.launchApp(fullScreen=config.fullscreen) as controller:
       try:
         getGameState = controller.observe # function that observes what's changed since the prior gameloop(s)
@@ -123,6 +125,7 @@ def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
         except Exception as e:
             print("ERROR: agent %s crashed during init: %s (%s)"%(thisPlayer.initCmd, e, type(e)))
             return (rh.playerCrashed(config), "") # no replay information to get
+        startWaitTime = now()
         while True:  # wait for game to end while players/bots do their thing
             obs = getGameState()
             result = obs.player_result
@@ -131,30 +134,33 @@ def run(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=False):
                 break
             try:    agentCallBack(obs) # do developer's creative stuff
             except Exception as e:
-                print("ERROR: agent %s crashed during game: %s (%s)"%(thisPlayer.initCmd, e, type(e)))
+                print("%s ERROR: agent callback %s of %s crashed during game: %s"%(type(e), agentCallBack, thisPlayer.initCmd, e))
                 finalResult = rh.playerCrashed(config)
                 break
+            newNow = now() # periodicially acquire the game's replay data (in case of abnormal termination)
+            if newNow - startWaitTime > c.REPLAY_SAVE_FREQUENCY:
+                replayData = controller.save_replay()
+                startWaitTime = newNow
+        replayData = controller.save_replay() # one final attempt to get the complete replay data
         #if config.saveReplayAfterGame:
         #    replayData = controller.save_replay()
         #    replay.save(replayData)
         #    # TODO -- copy/ftp generated replay file to replay processing folder
         #controller.leave() # the connection to the server process is (cleanly) severed
       except (protocol.ConnectionError, protocol.ProtocolError, remote_controller.RequestError) as e:
-        if debug:   print("%s Connection to game closed (NOT a bug)%s%s"%(type(e), os.linesep, e))
-        else:       print(   "Connection to game host was lost.")
+        print(debug)
+        if debug:   print("%s Connection to game closed, likely by agent (NOT a bug)%s%s"%(type(e), os.linesep, e))
+        else:       print(   "Connection to game host has ended.")
         finalResult = rh.playerDisconnected(config)
       except KeyboardInterrupt:
         if debug: print("caught command to forcibly shutdown Starcraft2 host process.")
         finalResult = rh.playerSurrendered(config)
       finally:
-        #config.disable() # if the saved cfg file still exists, always remove it
-        if replayData == None: # only get replayData if not already preset
-            replayData = base64.encodestring(controller.save_replay()).decode() # convert raw bytes into str
+        if replayData: # ensure replay data can be transmitted over http
+            replayData = base64.encodestring(replayData).decode() # convert raw bytes into str
         controller.quit() # force the sc2 application to close
-        #if debug:
-        print("host process has ended")
-    if not finalResult:
-        finalResult = rh.playerSurrendered(config)
-    #if debug: print("finalResult:\n", finalResult)
+    if debug:
+        replaySize = len(replayData) if replayData else 0
+        print("finalResult: %d%s%s"%(replaySize, os.linesep, finalResult))
     return (finalResult, replayData)
 
