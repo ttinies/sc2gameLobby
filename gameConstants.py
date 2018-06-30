@@ -6,6 +6,7 @@ from __future__ import print_function # python 2/3 compatibility
 import os
 
 from sc2common.constants import *
+from sc2common import types
 
 ################################################################################
 class TimeoutExceeded(Exception): pass
