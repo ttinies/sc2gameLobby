@@ -411,7 +411,7 @@ class Config(object):
             data = json.loads(data)
         self.__dict__.update(data)
         self.inflate() # restore objects from str values
-        if self.ports:  self._gotPorts = True
+        #if self.ports:  self._gotPorts = True
         return self
     ############################################################################
     def toJson(self, data=None, pretty=False):
@@ -451,7 +451,9 @@ class Config(object):
         return self.ipAddress
     ############################################################################
     def getPorts(self):
-        """identify ports to be used by the SC2 client launched by this process"""
+        """acquire ports to be used by the SC2 client launched by this process"""
+        if self.ports: # no need to get ports if ports are al
+            return self.ports
         if not self._gotPorts:
             #if len(self.players)==0:
             #    p = getPlayer(self.players[0])
@@ -467,9 +469,10 @@ class Config(object):
     def returnPorts(self):
         """deallocate specific ports on the current machine"""
         if self._gotPorts:
+            print("deleting ports >%s<"%(self.ports))
             map(portpicker.return_port, self.ports)
             self._gotPorts = False
-            self.ports = []
+        self.ports = []
     ############################################################################
     def save(self, filename=None, debug=False):
         """save a data file such that all processes know the game that is running"""
