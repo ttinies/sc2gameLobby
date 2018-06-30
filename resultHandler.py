@@ -44,13 +44,13 @@ def assignValue(cfg, playerValue, otherValue):
     for p in cfg.players:
         if p.name == player.name:   val = playerValue
         else:                       val = otherValue
-        result[player.name] = val
+        result[p.name] = val
     return result 
 
 
 ################################################################################
 def idPlayerResults(cfg, rawResult):
-    """interpret rawResult for all players with known IDs"""
+    """interpret standard rawResult for all players with known IDs"""
     result = {}
     knownPlayers = []
     dictResult = {plyrRes.player_id : plyrRes.result for plyrRes in rawResult}
