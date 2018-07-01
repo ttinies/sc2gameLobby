@@ -197,14 +197,15 @@ def run(options):
             #print(httpResp.json())
         ### send actual results ###
         replaySize = len(replayData) if replayData else 0
-        print("FINAL RESULT: (%d)"%(replaySize))
-        print(json.dumps(result, indent=4))
+        if replaySize:
+            print("FINAL RESULT: (%d)"%(replaySize))
+            print(json.dumps(result, indent=4))
         if result != None: # regular result is expected to be reported by
             try:
                 httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
                 if not httpResp.ok: exitStatement(httpResp.text)
             except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
-            print(httpResp.json()) # also display effective rating changes 
+            if replaySize: print(httpResp.json()) # also display effective rating changes 
     elif options.add:       versions.addNew(*options.add.split(','))
     elif options.update:
         keys = [
