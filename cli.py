@@ -24,7 +24,7 @@ def main():
     gameOptions.add_argument("--search"         , default=""            , help="retrieve player information from the ladder (comma separated names)", metavar="PLAYERS")
     gameOptions.add_argument("--history"        , action="store_true"   , help="include match history when using the --search option.")
     startOption = parser.add_argument_group('sc2 game client gameplay options')
-    startOption.add_argument("-l", "--ladder"   , default="localhost"   , choices=ALLOWED_LADDERS
+    startOption.add_argument("-l", "--ladder"   , default="versentiedge", choices=ALLOWED_LADDERS
                                                                         , help="the ladder where the game is run.  Allowed values: " + ", ".join(ALLOWED_LADDERS), metavar='')
     startOption.add_argument("-p", "--player"   , default="defaulthuman", choices=ALLOWED_PLAYERS
                                                                         , help="the player profile the ladder identifies you with.  Allowed values: " + ", ".join(ALLOWED_PLAYERS), metavar='')
