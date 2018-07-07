@@ -17,7 +17,7 @@ DESCRIPTION = 'Game lobby for SC2 AI and AI assisted games'
 URL = 'https://github.com/ttinies/sc2gameLobby'
 EMAIL = 'chageme'
 AUTHOR = 'change me'
-REQUIRES_PYTHON = '>2.6' # This is how other people do it https://github.com/requests/requests/blob/master/setup.py#L82
+REQUIRES_PYTHON = '>2.6'
 VERSION = None
 
 # What packages are required for this module to be executed?
@@ -28,7 +28,8 @@ REQUIRED = [
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
 # Except, perhaps the License and Trove Classifiers!
-# If you do change the License, remember to change the Trove Classifier for that!
+# If you do change the License,
+# remember to change the Trove Classifier for that!
 
 here = os.path.abspath(os.path.dirname(__file__))
 
