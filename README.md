@@ -7,3 +7,5 @@
 ## Conda
 
 # How to use
+
+# How to contribute
