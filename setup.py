@@ -97,7 +97,7 @@ setup(
     url=URL,
     packages=find_packages(exclude=('tests',)),
     entry_points={
-         'console_scripts': ['sc2gameLobby=sc2gameLobby.cli:cli'],
+         'console_scripts': ['sc2gameLobby=sc2gameLobby.cli:main'],
     },
     install_requires=REQUIRED,
     include_package_data=True,
