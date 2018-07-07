@@ -22,7 +22,15 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'six'
+    'six',
+    'pySC2',
+    's2clientprotocol',
+    'portpicker'
+    #sc2common,
+    #sc2ladderMgmt,
+    #sc2players
+
+
 ]
 
 # The rest you shouldn't have to touch too much :)
