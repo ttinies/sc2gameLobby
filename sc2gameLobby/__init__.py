@@ -18,8 +18,8 @@ limitations under the License.
 """
 
 from __future__ import absolute_import
-from __future__ import division       # python 2/3 compatibility
-from __future__ import print_function # python 2/3 compatibility
+from __future__ import division  # python 2/3 compatibility
+from __future__ import print_function  # python 2/3 compatibility
 
 import os
 
@@ -34,15 +34,16 @@ from sc2gameLobby import versions
 
 
 ################################################################################
-config  = gameConfig.Config         # set up the player/match environment as desired
-host    = hostGame.run              # host a new Starcraft2 match, given a configuration
-join    = joinGame.playerJoin       # join an existing Starcraft2 match, given a configuration
-clear   = gameConfig.clearConfigs   # manually reset/clear any existing (defunct) game configurations
-active  = gameConfig.activeConfigs  # display the games currently being set up
+config = gameConfig.Config  # set up the player/match environment as desired
+host = hostGame.run  # host a new Starcraft2 match, given a configuration
+join = joinGame.playerJoin  # join an existing Starcraft2 match, given a configuration
+clear = (
+    gameConfig.clearConfigs
+)  # manually reset/clear any existing (defunct) game configurations
+active = gameConfig.activeConfigs  # display the games currently being set up
 
 
 ################################################################################
 def updateVersion(**kwargs):
     """add/update record data using kwargs params for new keys/values"""
     versions.handle.save(kwargs)
-
