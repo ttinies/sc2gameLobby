@@ -60,7 +60,7 @@ class ClientController(remote_controller.RemoteController):
         # Prefer using a context manager, but this cleans most other cases.
         self.close()
     ############################################################################
-    def connect(self, url=c.LOCALHOST, port=None, timeout=120):
+    def connect(self, url=c.LOCALHOST, port=None, timeout=c.INITIAL_TIMEOUT):
         """socket connect to an already running starcraft2 process"""
         if port != None: # force a selection to a new port
             if self._port!=None: # if previously allocated port, return it
