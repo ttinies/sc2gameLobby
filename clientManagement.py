@@ -36,6 +36,12 @@ class ClientController(remote_controller.RemoteController):
         except: stat = "disconnected"
         return "<%s%s%s %s>"%(self.name, url, port, stat)
     ############################################################################
+    def __nonzero__(self):
+        """whether this ClientController is connected"""
+        try:    self.status
+        except: return False
+        return True
+    ############################################################################
     @property
     def name(self):
         if not self._name: # execute only once, if needed
@@ -105,4 +111,7 @@ class ClientController(remote_controller.RemoteController):
         #request.replay_data = ?
         #request.download_data=True
         return self._client.send(replay_info=request)
+
+
+ClientController.__bool__ = ClientController.__nonzero__ # python2-3 compatibility
 
