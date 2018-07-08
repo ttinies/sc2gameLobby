@@ -31,33 +31,32 @@ def playerJoin(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True
     thisPlayer  = config.whoAmI()
     operPrefix  = "HOST" if amHosting else "JOIN"
     operType    = "%sGAME"%operPrefix
-    hostInfo    = config.host
-    try:    ipAddresses, hostPorts = hostInfo
-    except ValueError:
-        raise ValueError("invalid host configuration; expected IP addresses "\
-                         "and ports. Given: %s"%str(hostInfo))
-    print(ipAddresses)
-    print(hostPorts)
+    createReq   = config.requestCreateDetails() if amHosting else None
     joinReq     = config.requestJoinDetails()
-    selectedIP  = ipAddresses[-1] # by default, assume game is local
-    for game,mine in zip(ipAddresses, config.ipAddress): # compare my IP vs hostCfg's IP
-        if game and game==mine: continue
-        selectedIP = mine
-        break
-    print("selectedIP:", selectedIP)
+    selectedIP  = config.clientInitHost()
     selectPort  = config.clientInitPort()
     controller  = None # the object that manages the application process
     finalResult = rh.playerSurrendered(config) # default to this player losing if somehow a result wasn't acquired normally
     replayData  = "" # complete raw replay data for the match
+    print("selectedIP:", selectedIP)
     if debug: print("[%s] Starcraft2 game process is launching (fullscreen=%s)."%(operType, config.fullscreen))
     with config.launchApp(fullScreen=config.fullscreen, ip_address=selectedIP, port=selectPort, connect=False):
       try: # WARNING: if port equals the same port of the host on the same machine, this subsequent process closes!
         controller = ClientController()
         controller.connect(url=selectedIP, port=selectPort, timeout=lobbyTimeout) # establish socket connection
-        timeToWait = c.DEFAULT_HOST_DELAY
-        for i in range(timeToWait): # WARNING: the host must perform its join action with its client before any joining players issue join requests to their clients
-            if debug: print("[%s] waiting %d seconds for the host to finish its init sequence."%(operType, timeToWait-i))
-            time.sleep(1)
+        if amHosting:
+            if debug:
+                  print("[%s] Starcraft2 host application is live. (%s)"%(operType, controller.status)) # status: launched
+                  print("[%s] Creating Starcraft Game at %s"%(operType, controller))
+            controller.create_game(createReq)
+            if debug:
+                  print("[%s] Starcraft2 is waiting for %d player(s) to join. (%s)"%(operType, config.numAgents, controller.status)) # status: init_game
+                  print("[%s] sending request to join game. (%s)"%(operType, controller.status)) # status: init_game
+        else: # joining clients must wait for host to perfrom its join request
+            timeToWait = c.DEFAULT_HOST_DELAY
+            for i in range(timeToWait): # WARNING: the host must perform its join action with its client before any joining players issue join requests to their clients
+                if debug: print("[%s] waiting %d seconds for the host to finish its init sequence."%(operType, timeToWait-i))
+                time.sleep(1)
         joinResp = controller.join_game(joinReq) # SC2APIProtocol.RequestJoinGame
         print("[%s] connection to %s:%d was successful. Game is starting! (%s)"%(operType, selectedIP, selectPort, controller.status)) # status: in_game
         thisPlayer.playerID = int(joinResp.player_id) # update playerID; repsponse to join game request is authority
