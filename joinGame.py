@@ -38,7 +38,6 @@ def playerJoin(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True
     controller  = None # the object that manages the application process
     finalResult = rh.playerSurrendered(config) # default to this player losing if somehow a result wasn't acquired normally
     replayData  = "" # complete raw replay data for the match
-    print("selectedIP:", selectedIP)
     if debug: print("[%s] Starcraft2 game process is launching (fullscreen=%s)."%(operType, config.fullscreen))
     with config.launchApp(fullScreen=config.fullscreen, ip_address=selectedIP, port=selectPort, connect=False):
       try: # WARNING: if port equals the same port of the host on the same machine, this subsequent process closes!
