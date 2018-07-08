@@ -17,7 +17,7 @@ from sc2gameLobby import gameConstants as c
 class ClientController(remote_controller.RemoteController):
     """similar to pysc2 StarcratProcess, but without the process to enable multiple game connections"""
     ############################################################################
-    def __init__(self, url=None, port=None):
+    def __init__(self, url=None, port=None, timeout=c.INITIAL_TIMEOUT):
         sys.argv = sys.argv[:1] # trim to force flags to do nothing
         FLAGS = protocol.flags.FLAGS
         FLAGS(sys.argv) # always ensure flags did its checking
@@ -26,7 +26,7 @@ class ClientController(remote_controller.RemoteController):
         self._client    = None
         self._name      = ""
         if url!=None or port!=None:
-            self.connect(url=url, port=port)
+            self.connect(url=url, port=port, timeout=timeout)
     ############################################################################
     def __str__(self): return self.__repr__()
     def __repr__(self):
