@@ -154,6 +154,7 @@ def run(options):
                 except AttributeError as e:         exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
                 except Exception as e:              exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
             else: # launch separate process that manages the agent and results
+                # TODO -- ensure proper port info is supplied to the subprocess
                 p = subprocess.Popen(thisPlayer.initCmd.split())
                 p.communicate()
                 msg = "Command-line bot %s finished normally."%(thisPlayer)
@@ -169,7 +170,7 @@ def run(options):
             if matchCfg.host: # host contains details of the host to connect to
                   func = join # join game on host when host details are provided
             else: func = host # no value means this machine is hosting
-            result,replayData = func(matchCfg, agentCallBack=callBack, debug=False)
+            result,replayData = func(matchCfg, agentCallBack=callBack)
         except c.TimeoutExceeded as e: # match failed to launch
             print(e)
             result = rh.launchFailure(matchCfg) # report UNDECIDED results
