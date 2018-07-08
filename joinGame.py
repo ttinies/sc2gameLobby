@@ -3,8 +3,6 @@ from __future__ import absolute_import
 from __future__ import division       # python 2/3 compatibility
 from __future__ import print_function # python 2/3 compatibility
 
-from s2clientprotocol import sc2api_pb2 as sc_pb
-
 from pysc2.lib import protocol
 from pysc2.lib import remote_controller
 from pysc2.lib.sc_process import FLAGS
@@ -18,7 +16,6 @@ import time
 from sc2gameLobby.clientManagement import ClientController
 from sc2gameLobby import gameConfig
 from sc2gameLobby import gameConstants as c
-from sc2gameLobby import hostGame
 from sc2gameLobby import resultHandler as rh
 
 now = time.time
@@ -30,69 +27,37 @@ def playerJoin(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True
     FLAGS(sys.argv) # ignore pysc2 command-line handling (eww)
     log = protocol.logging.logging
     log.disable(log.CRITICAL) # disable pysc2 logging
-    thisPlayer = config.whoAmI()
-    operType = "JOINGAME"
-    interface = sc_pb.InterfaceOptions()
-    raw,score,feature,rendered = config.interfaces
-    interface.raw   = raw   # whether raw data is reported in observations
-    interface.score = score # whether score data is reported in observations
-    interface.feature_layer.width = 24
-    #interface.feature_layer.resolution =
-    #interface.feature_layer.minimap_resolution =
-    hostInfo = config.host
+    amHosting   = not bool(config.host)
+    thisPlayer  = config.whoAmI()
+    operPrefix  = "HOST" if amHosting else "JOIN"
+    operType    = "%sGAME"%operPrefix
+    hostInfo    = config.host
     try:    ipAddresses, hostPorts = hostInfo
     except ValueError:
-        if len(hostInfo) != 2:
-            raise ValueError("invalid host configuration; expected IP addresses "\
-                             "and ports. Given: %s"%str(hostInfo))
+        raise ValueError("invalid host configuration; expected IP addresses "\
+                         "and ports. Given: %s"%str(hostInfo))
     print(ipAddresses)
     print(hostPorts)
-
-    joinReq = sc_pb.RequestJoinGame( # SC2APIProtocol.RequestJoinGame
-        options=interface,
-        #observed_player_id=__?__,
-        race=thisPlayer.selectedRace.gameValue())
-    # TODO -- allow player to be an observer, not just a player w/ race
-    print("original ports:", config.ports)
-    config.returnPorts()
-    import portpicker
-    #config.ports = [portpicker.pick_unused_port() for i in range(10)]
-    config.ports = [14110] * 10# + i for i in range(10)]
-    config.ports[0] +=  0
-    config.ports[1] += 10
-    config.ports[2] += 20
-    config.ports[3] += 30
-    config.ports[4] += 10
-    config.ports[5] += 11
-    config.ports[6]  = 0
-    for manualPort in config.ports:
-        if not portpicker.is_port_free(manualPort):
-            print("WARNING: port %d is not free!"%manualPort)
-    p1 = joinReq.client_ports.add()
-    selectedPorts = hostGame.buildJoinRequest(config.ports)
-    joinReq.server_ports.game_port, joinReq.server_ports.base_port, \
-        p1.game_port, p1.base_port, \
-        joinReq.shared_port = selectedPorts
-    selectedIP = ipAddresses[-1] # by default, assume game is local
+    joinReq     = config.requestJoinDetails()
+    selectedIP  = ipAddresses[-1] # by default, assume game is local
     for game,mine in zip(ipAddresses, config.ipAddress): # compare my IP vs hostCfg's IP
         if game and game==mine: continue
         selectedIP = mine
         break
     print("selectedIP:", selectedIP)
-    selectPort  = config.ports[1]
+    selectPort  = config.clientInitPort()
     controller  = None # the object that manages the application process
     finalResult = rh.playerSurrendered(config) # default to this player losing if somehow a result wasn't acquired normally
     replayData  = "" # complete raw replay data for the match
+    if debug: print("[%s] Starcraft2 game process is launching (fullscreen=%s)."%(operType, config.fullscreen))
     with config.launchApp(fullScreen=config.fullscreen, ip_address=selectedIP, port=selectPort, connect=False):
       try: # WARNING: if port equals the same port of the host on the same machine, this subsequent process closes!
-        controller = ClientController() # connect to (remote) host
-        controller.connect(url=selectedIP, port=selectPort, timeout=lobbyTimeout)
+        controller = ClientController()
+        controller.connect(url=selectedIP, port=selectPort, timeout=lobbyTimeout) # establish socket connection
         timeToWait = c.DEFAULT_HOST_DELAY
         for i in range(timeToWait): # WARNING: the host must perform its join action with its client before any joining players issue join requests to their clients
             if debug: print("[%s] waiting %d seconds for the host to finish its init sequence."%(operType, timeToWait-i))
             time.sleep(1)
-        print("JOIN JOIN REQUEST:")
-        print(joinReq)
         joinResp = controller.join_game(joinReq) # SC2APIProtocol.RequestJoinGame
         print("[%s] connection to %s:%d was successful. Game is starting! (%s)"%(operType, selectedIP, selectPort, controller.status)) # status: in_game
         thisPlayer.playerID = int(joinResp.player_id) # update playerID; repsponse to join game request is authority
@@ -135,8 +100,6 @@ def playerJoin(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True
       finally:
         if replayData: # ensure replay data can be transmitted over http
             replayData = base64.encodestring(replayData).decode() # convert raw bytes into str
-        if controller:
-            controller.quit() # force the sc2 application to close
-            controller = None # force close the websocket
+        if controller: controller.quit() # force the sc2 application to close
     return (finalResult, replayData)
 
