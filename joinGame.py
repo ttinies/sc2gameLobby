@@ -25,7 +25,7 @@ now = time.time
 
 
 ################################################################################
-def playerJoin(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=True):
+def playerJoin(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True):
     """cause an agent to join an already hosted game"""
     FLAGS(sys.argv) # ignore pysc2 command-line handling (eww)
     log = protocol.logging.logging
@@ -86,9 +86,7 @@ def playerJoin(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=True
     with config.launchApp(fullScreen=config.fullscreen, ip_address=selectedIP, port=selectPort, connect=False):
       try: # WARNING: if port equals the same port of the host on the same machine, this subsequent process closes!
         controller = ClientController() # connect to (remote) host
-        controller.connect(url=selectedIP, port=selectPort, timeout=c.DEFAULT_TIMEOUT)
-        
-        
+        controller.connect(url=selectedIP, port=selectPort, timeout=lobbyTimeout)
         timeToWait = c.DEFAULT_HOST_DELAY
         for i in range(timeToWait): # WARNING: the host must perform its join action with its client before any joining players issue join requests to their clients
             if debug: print("[%s] waiting %d seconds for the host to finish its init sequence."%(operType, timeToWait-i))
@@ -111,10 +109,10 @@ def playerJoin(config, agentCallBack, lobbyTimeout=c.DEFAULT_TIMEOUT, debug=True
         while True:  # wait for game to end while players/bots do their thing
             obs = getGameState()
             result = obs.player_result
-            if result: # match end condition was supplied by the host
+            if result: # match end condition was supplied by the client
                 finalResult = rh.idPlayerResults(config, result)
                 break
-            try:    agentCallBack(obs) # do developer's creative stuff
+            try: agentCallBack(obs) # do developer's creative stuff
             except Exception as e:
                 print("%s ERROR: agent callback %s of %s crashed during game: %s"%(type(e), agentCallBack, thisPlayer.initCmd, e))
                 finalResult = rh.playerCrashed(config)
