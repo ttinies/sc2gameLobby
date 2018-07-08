@@ -10,7 +10,7 @@ from sc2common import types
 
 ################################################################################
 class TimeoutExceeded(Exception): pass
-class UknownPlayer(Exception): pass
+class UnknownPlayer(Exception): pass
 
 ################################################################################
 # file/folder information
@@ -28,6 +28,7 @@ FOLDER_IGNORED_MAPS     = ["Melee", "mini_games", "Test"]
 # misc
 MIN_REQUIRED_PLAYERS    = 2   # players
 DEFAULT_TIMEOUT         = 120 # seconds
+DEFAULT_HOST_DELAY      = 4   # seconds
 REPLAY_SAVE_FREQUENCY   = 10  # seconds
 URL_BASE                = "http://%s:%s/%s/"
 
