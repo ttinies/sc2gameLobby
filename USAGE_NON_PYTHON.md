@@ -1,3 +1,3 @@
 
-## test 1
+# sc2gameLobby Usage Description - for non-python applications
 
