@@ -8,7 +8,7 @@ The objective of this repository is enable casual Starcraft 2 players, AI develo
 
 There is an existing ladder for AI-only developers, [sc2ai.net](https://sc2ai.net/).  While that project is under active development as of July 6, 2018, its roadmap doesn't support several critical features which impedes developers' efforts (such as ours) to create AI that is publicly visible.  Here are several features which this ladder supports that sc2ai.net may not.
 
-* Play on your own machine against others on their own machines.  You're no longer limited by some other person's machine who is sharing system resources with other players.
+* Play on your own machine against others on their own machines.  You're no longer limited by some other person's machine who is sharing system resources with other players in the game.
 * Support AI vs AI, AI vs human and human vs human play.
 * AI developers aren't required to share their source code or any executable.
 * Fast, user-friendly setup that non-programmers or programmers with lower proficiency in a specific language can set up.  No need to hunt + edit files by hand.
@@ -108,7 +108,9 @@ test command: `python -m sc2gameLobby --search mapexplorer`
 
 #### Troubleshooting
 
-`ERROR: A connection could not be made. <Ladder versentiedge> may not be available or you may not be connected to the internet.`
+```
+ERROR: A connection could not be made. <Ladder versentiedge> may not be available or you may not be connected to the internet.
+```
 
 This means that the ladder server instance you are attempting to communicate with could not be reached.  It may not be online or your connection to the internet may be compromised.
 
@@ -116,7 +118,7 @@ This means that the ladder server instance you are attempting to communicate wit
 
 ## Recommended Usage
 
-Great, now you're set to rock ladder matches versus humans and AI opponents!  Refer to [python](abc)-specific or [non python](def)-specific usage documents.  Good luck!
+Great, now you're set to rock ladder matches versus humans and AI opponents!  Refer to [python](https://github.com/ttinies/sc2gameLobby/blob/master/USAGE_PYTHON.md)-specific or [non python](https://github.com/ttinies/sc2gameLobby/blob/master/USAGE_NON_PYTHON.md)-specific usage documents.  Good luck!
 
 ## Further Development and Augmentation
 
