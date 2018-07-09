@@ -32,18 +32,13 @@ from sc2gameLobby import joinGame
 from sc2gameLobby import replay
 from sc2gameLobby import versions
 
-
-################################################################################
 config = gameConfig.Config  # set up the player/match environment as desired
 host = hostGame.run  # host a new Starcraft2 match, given a configuration
 join = joinGame.playerJoin  # join an existing Starcraft2 match, given a configuration
-clear = (
-    gameConfig.clearConfigs
-)  # manually reset/clear any existing (defunct) game configurations
+clear = gameConfig.clearConfigs  # manually reset/clear any existing (defunct) game configurations
 active = gameConfig.activeConfigs  # display the games currently being set up
 
 
-################################################################################
 def updateVersion(**kwargs):
     """add/update record data using kwargs params for new keys/values"""
     versions.handle.save(kwargs)
