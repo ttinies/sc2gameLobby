@@ -110,7 +110,7 @@ class LocalBase(lib.RunConfig):
       #return [versions.Version(vKey).label for vKey in self.validVersionExecutables]
   ##############################################################################
   def start(self, version=None, **kwargs):#game_version=None, data_version=None, **kwargs):
-    """Launch the game."""
+    """Launch the game process."""
     if not version:
         version = self.mostRecentVersion
     pysc2Version = lib.Version( # convert to pysc2 Version

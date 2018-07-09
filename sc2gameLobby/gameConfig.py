@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from __future__ import division       # python 2/3 compatibility
 from __future__ import print_function # python 2/3 compatibility
 
+from s2clientprotocol import sc2api_pb2 as sc_pb
+
 from six import iteritems # python 2/3 compatibility
 
 import glob
@@ -150,7 +152,7 @@ class Config(object):
     ############################################################################
     @property
     def attrs(self):
-        data = dict(self.__dict__)
+        data = dict(self.__dict__) # a new, altered dict is returned
         for k,v in sorted(iteritems(data)):
             #if re.search(Config.regexRaw, k): continue # ignore attrs that aren't raw data
             if re.search("^_", k):  del data[k]
@@ -312,6 +314,16 @@ class Config(object):
             raise ValueError("%s must be a %s"%(player, PlayerPreGame))
         self.players.append(player)
     ############################################################################
+    def clientInitHost(self):
+        """extract ipAddress information used by the local client to connect to another SC2 client at this IP address"""
+        if self.host:   return self.host[0]
+        else:           return self.getIPaddresses()[-1]
+    ############################################################################
+    def clientInitPort(self):
+        """extract the port that is used to connect to the locally launched SC2 client"""
+        ports = self.getPorts()
+        return ports[2] # private shared_port / init port
+    ############################################################################
     def disable(self):
         try:
             os.remove(self.name) # delete the file
@@ -363,13 +375,16 @@ class Config(object):
         if self.themap  and not isinstance(self.themap, MapRecord):             self.themap     = selectMap(name=self.themap)
     ############################################################################
     def launchApp(self, fullScreen=True, **kwargs):
-        """Launch Starcraft2 process in the background using this configuration"""
+        """Launch Starcraft2 process in the background using this configuration.
+        WARNING: if the same IP address and port are specified between multiple
+                 SC2 process instances, all subsequent processes after the first
+                 will fail to initialize and crash.
+        """
         app = self.installedApp
-        # TODO -- launch host in window minimized mode
+        # TODO -- launch host in window minimized/headless mode
         vers = self.getVersion()
-        proc = app.start(version=vers,#game_version=vers.baseVersion, data_version=vers.dataHash,
-            port=self.getPorts()[0], full_screen=fullScreen, verbose=self.debug, **kwargs)
-        return proc
+        return app.start(version=vers,#game_version=vers.baseVersion, data_version=vers.dataHash,
+            full_screen=fullScreen, verbose=self.debug, **kwargs)
     ############################################################################
     def load(self, cfgFile=None, timeout=None):
         """expect that the data file has already been established"""
@@ -398,12 +413,6 @@ class Config(object):
         if self.debug:
             print("configuration loaded: %s"%(self.name))
             self.display()
-    ############################################################################
-    def updateID(self, value, player=None):
-        """ensure this player's player ID is specified by the host client"""
-        if player == None:
-            player = self.whoAmI()
-        player.playerID = value
     ############################################################################
     def loadJson(self, data):
         """convert the json data into updating this obj's attrs"""
@@ -455,16 +464,74 @@ class Config(object):
         if self.ports: # no need to get ports if ports are al
             return self.ports
         if not self._gotPorts:
-            #if len(self.players)==0:
-            #    p = getPlayer(self.players[0])
-            #    if self.isComputer: return self.ports
             self.ports = [
                 portpicker.pick_unused_port(), # game_port
                 portpicker.pick_unused_port(), # base_port
-                portpicker.pick_unused_port(), # shared_port
+                portpicker.pick_unused_port(), # shared_port / init port
             ]
             self._gotPorts = True
         return self.ports
+    ############################################################################
+    def requestCreateDetails(self):
+        """add configuration to the SC2 protocol create request"""
+        createReq = sc_pb.RequestCreateGame( # used to advance to Status.initGame state, when hosting
+            realtime    = self.realtime,
+            disable_fog = self.fogDisabled,
+            random_seed = int(time.time()), # a game is created using the current second timestamp as the seed
+            local_map   = sc_pb.LocalMap(map_path=self.mapLocalPath,
+                                         map_data=self.mapData))
+        for player in self.players:
+            reqPlayer = createReq.player_setup.add() # add new player; get link to settings
+            playerObj = PlayerPreGame(player)
+            if playerObj.isComputer:
+                reqPlayer.difficulty    = playerObj.difficulty.gameValue()
+            reqPlayer.type              = c.types.PlayerControls(playerObj.control).gameValue()
+            reqPlayer.race              = playerObj.selectedRace.gameValue()
+        return createReq # SC2APIProtocol.RequestCreateGame
+    ############################################################################
+    def requestJoinDetails(self):
+        """add configuration information to the SC2 protocol join request
+    REQUIREMENTS FOR SUCCESSFUL LAUNCH:
+    server game_port must match between all join requests to client (represents the host's port to sync game clients)
+    server base_port
+    client game_port must be unique between each client (represents ???)
+    client base_port
+    client shared_port must match between all join requests to client
+        """
+        raw,score,feature,rendered = self.interfaces
+        interface = sc_pb.InterfaceOptions()
+        interface.raw   = raw   # whether raw data is reported in observations
+        interface.score = score # whether score data is reported in observations
+        interface.feature_layer.width = 24
+        #interface.feature_layer.resolution =
+        #interface.feature_layer.minimap_resolution =
+        joinReq = sc_pb.RequestJoinGame(
+            options = interface,
+            #observed_player_id=__?__,
+            race = self.whoAmI().selectedRace.gameValue())
+        # TODO -- allow player to be an observer, not just a player w/ race
+        if self.host: # always add ports for joining player to connect to defined host
+            hostPorts = self.host[1]
+            joinReq.server_ports.game_port = hostPorts[0]
+            joinReq.server_ports.base_port = hostPorts[1]
+            joinReq.shared_port            = hostPorts[2]
+            clientPorts = joinReq.client_ports.add()
+            clientPorts.game_port = self.ports[0]
+            clientPorts.base_port = self.ports[1]
+            ret = self.ports[2]
+        elif self.isMultiplayer: # always add ports as host of multiple agents/clients
+            if len(self.ports) < 5:
+                self.ports += [ # get new private client ports for the host
+                    portpicker.pick_unused_port(), # game_port
+                    portpicker.pick_unused_port(), # base_port
+                ]
+            joinReq.server_ports.game_port = self.ports[0]
+            joinReq.server_ports.base_port = self.ports[1]
+            joinReq.shared_port            = self.ports[2]
+            clientPorts = joinReq.client_ports.add()
+            clientPorts.game_port = self.ports[3] # new private client game port
+            clientPorts.base_port = self.ports[4] # new private client base port
+        return joinReq # SC2APIProtocol.RequestJoinGame
     ############################################################################
     def returnPorts(self):
         """deallocate specific ports on the current machine"""
@@ -483,6 +550,31 @@ class Config(object):
             print("saved configuration %s"%(self.name))
             for k,v in sorted(iteritems(self.attrs)):
                 print("%15s : %s"%(k,v))
+    ############################################################################
+    def updateIDs(self, ginfo, tag=None, debug=False):
+        """ensure all player's playerIDs are correct given game's info"""
+            # SC2APIProtocol.ResponseGameInfo attributes:
+                # map_name
+                # mod_names
+                # local_map_path
+                # player_info
+                # start_raw
+                # options
+        thisPlayer = self.whoAmI()
+        for pInfo in ginfo.player_info: # parse ResponseGameInfo.player_info to validate player information (SC2APIProtocol.PlayerInfo) against the specified configuration
+            pID = pInfo.player_id
+            if pID == thisPlayer.playerID: continue # already updated
+            pCon = c.types.PlayerControls(pInfo.type)
+            rReq = c.types.SelectRaces(pInfo.race_requested)
+            for p in self.players: # ensure joined player is identified appropriately
+                if p.playerID and p.playerID != pID: continue # if this non-matching player already has a set playerID, it can't match
+                if p.control == pCon and p.selectedRace == rReq: # matched player
+                    p.playerID = pID # updated player IDs should be saved into the game configuration
+                    if debug: print("[%s] match contains %s."%(tag, p))
+                    pID = 0 # declare that the player has been identified
+                    break
+            if pID: raise c.UnknownPlayer("could not match %s %s %s to any "
+                "existing player of %s"%(pID, pCon, rReq, self.players))
     ############################################################################
     def whoAmI(self):
         """return the player object that owns this configuration"""
