@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from cli import main
+from sc2gameLobby.cli import main
 
 if __name__=="__main__":
     main()
