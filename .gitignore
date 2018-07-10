@@ -119,3 +119,5 @@ tags
 # IDE temporary files
 \#*#
 jsonData/versions_*
+# Devops stuff
+codecoverage/

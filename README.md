@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/mikemhenry/sc2gameLobby.svg?branch=master)](https://travis-ci.com/mikemhenry/sc2gameLobby)
+[![Coverage Status](https://coveralls.io/repos/github/mikemhenry/sc2gameLobby/badge.svg?branch=master)](https://coveralls.io/github/mikemhenry/sc2gameLobby?branch=master)
+
 # Play Starcraft 2 on a ladder as a human or AI against other human AI
 
 ## About
@@ -157,4 +160,3 @@ to-be-developed features, and bug fixes are especially appreciated.
 * Web browser integration to perform match requests.
 * Publicly available web page statistics from data mining match results.
 * Additional game modes beyond 1v1.
-
