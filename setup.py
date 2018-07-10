@@ -13,10 +13,10 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = "sc2gameLobby"
-DESCRIPTION = "Game lobby for SC2 AI and AI assisted games"
+DESCRIPTION = "An interface to request SC2 matches and launch the client for human and/or AI/bot play"
 URL = "https://github.com/ttinies/sc2gameLobby"
-EMAIL = "chageme"
-AUTHOR = "change me"
+EMAIL = "help.fool@versentiedge.com"
+AUTHOR = "ttinies"
 REQUIRES_PYTHON = ">2.6"
 VERSION = None
 
