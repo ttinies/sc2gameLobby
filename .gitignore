@@ -121,3 +121,6 @@ tags
 jsonData/versions_*
 # Devops stuff
 codecoverage/
+
+#
+sc2gameLobby/activeGames/*.json
