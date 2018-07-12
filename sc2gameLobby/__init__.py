@@ -32,6 +32,8 @@ from sc2gameLobby import joinGame
 from sc2gameLobby import replay
 from sc2gameLobby import versions
 
+from sc2maptool.__version__ import *
+
 config = gameConfig.Config  # set up the player/match environment as desired
 host = hostGame.run  # host a new Starcraft2 match, given a configuration
 join = joinGame.playerJoin  # join an existing Starcraft2 match, given a configuration
