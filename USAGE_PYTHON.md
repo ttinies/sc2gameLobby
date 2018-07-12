@@ -12,28 +12,17 @@ ladder server doesn't know this player already and accepts new players, the play
 ladder server as well.  If you're trying to create a player with a name already owned by another player, your match
 request will be rejected.
 
-1. Define a player ([instructions](asdf)).
+1. Define ( [instructions](https://github.com/ttinies/sc2gameLobby/blob/master/USAGE_PYTHON.md) ) or select an
+existing player.
 	
-* If you want to play as a human yourself, be sure the type is set as `human`.
-* If you're using code to understand data and make decisions, set the type as `bot`.
-* If your code uses machine learning in some form to make its decisions, set the type as `ai`.
+**NOTES**
+* If you want to play as a human yourself, be sure use a player where the type is set as `human`.
+* If selecting a AI/bot player, the initialization command must provide a callback function that initializes your code
+as you deem necessary in a list.  You may elect to return additional objects in this list which the sc2gameLobby
+otherwise ignores, except to ensure they are preserved throughout the duration of the match.
+* In realtime mode, it is possible to skip gameloop values and also possible to receive multiple copies of the
+same observation, depending on how busy the Starcraft 2 game client is, latency associated with data transfer, etc. 
 
-If you have a `bot` or `ai` type player, you must also specify the `initCmd` parameter.  The format for this value is
-`<your_package_name>` followed by each additional package/module/attribute needed to access your initializing function.
-First, your package will be imported.  Then each subsequent accessor is accessed until the presumed initializtion
-routine can be invoked.  The initialization routine is called without any parameters.  The return value from this
-function (callable) must be a list (an indexable iterable).  The first value (index 0) in this list must be a callback
-function.  Each time a game state observation is received from the connected Starcraft 2 client, your callback function
-is invoked and the observation is passed as a parameter.  Any additional indexes in the returned list can contain python
-objects of any kind that you wish to persist over the course of the game. Additional indexes are optional and subject to
-your own implementation.
-
-> `initCmd` format EXAMPLE: "amazingBot.source.initFunction"
-
-In this example, your bot is defined in the `amazingBot` package (which must be available in your environment).  It's 
-submodule `source` is accessed and ultimately your `initFunction` is called.  The return value from `initFunction` must
-be a list whose first index is a callback function. The callback function is invoked each time a new observation is
-received.
 
 ## Play a Ladder Match
 

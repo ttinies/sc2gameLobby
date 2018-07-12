@@ -6,14 +6,23 @@ following instructions detail how such a developer would enable their bot to wor
 
 #### How to set up your AI or bot
 
-1. Create a player definition ([instructions](asdf)).
+1. Create a player definition ( [instructions](https://github.com/ttinies/sc2players) ).
 	* The field `initCmd` is where you submit the system command that will execute your bot appropriately.
 	* If your application consumes the raw port values on the command line, specify this value as `__PORT__` in the
 	`initCmd` string.  This `__PORT__` value will be replaced with the actual port values as comma-separated integers
 	without whitespace.
-2.  Launch `python sc2gameLobby` with the desired options.
-	* it is important that you specify the data you need in your observations.  See `--help` for more info as to what
-	the `s2clientprotocol` provides for bot consumption.
+2.  Launch `python sc2gameLobby` with the desired options.  Once your process completes, no subsequent action is
+performed by the sc2gameLobby.
+	* The game configuration data can be passed to you using the variable __CFG_DATA__.  The value passed is actually an
+	absolute path to a file containing json formatted game configuration info.  This is important so that you understand
+	whether you are responsible to host the game or not, port information and more.
+	* You are obligated to constructe the RequestCreateGame and/or RequestJoinGame requests as mandated by the
+	[s2clientprotocol](https://github.com/Blizzard/s2client-proto/blob/master/docs/protocol.md).  Your code will also
+	run the main game loop that retrieves game state observations for you AI/bot agent.
+	* Once the match is completed,
+	* Your process is monitored by the sc2gameLobby to understand whether it completes successfully or not.  If it does
+	not (e.g. your process crashes, the game connection is lost, etc.), the sc2gameLobby automatically attempts to
+	report to the game ladder server that process crashed.
 
 > EXAMPLE: `python --nogui --raw --score --player=<your player name>`
 
