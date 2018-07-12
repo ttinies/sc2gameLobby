@@ -155,6 +155,7 @@ def run(options):
                 except Exception as e:              exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
             else: # launch separate process that manages the agent and results
                 # TODO -- ensure proper port info is supplied to the subprocess
+                # TODO -- ensure proper configuration info is supplied to the subprocess
                 p = subprocess.Popen(thisPlayer.initCmd.split())
                 p.communicate()
                 msg = "Command-line bot %s finished normally."%(thisPlayer)
