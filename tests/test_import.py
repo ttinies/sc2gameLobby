@@ -30,7 +30,7 @@ def test_cli_error1():
     cli.main()
 
 
-def test_cli_error2():
-    """test an invalid/offline server configuration"""
-    sys.argv = sys.argv[:1] + ["--ladder=testInvalid"]
-    cli.main()
+#def test_cli_error2():
+#    """test an invalid/offline server configuration"""
+#    sys.argv = sys.argv[:1] + ["--ladder=testInvalid"]
+#    cli.main()

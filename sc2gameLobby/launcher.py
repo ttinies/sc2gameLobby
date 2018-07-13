@@ -46,13 +46,13 @@ def exitStatement(msg, code=1):
     printMsg = msg
     if code: printMsg = "ERROR: %s"%(msg)
     print("%s%s"%(os.linesep, printMsg))
-    sys.exit(code)
+    return code
 
 
 ################################################################################
 def badConnect(ladder, code=2):
-    exitStatement("A connection could not be made. %s may not be available or "
-    "you may not be connected to the internet."%(ladder), code=code)
+    return exitStatement("A connection could not be made. %s may not be "
+    "available or you may not be connected to the internet."%(ladder), code=code)
 
 
 ################################################################################
@@ -93,7 +93,7 @@ def run(options):
         if not options.player: options.player = options.search
         cfg = getLaunchConfig(options)
         try: httpResp = connectToServer.ladderPlayerInfo(cfg, options.search, getMatchHistory=options.history)
-        except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
+        except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
         if not httpResp.ok: exitStatement(httpResp.text)
         printStr = "%15s : %s"
         for playerAttrs, playerHistory in httpResp.json():
@@ -113,7 +113,7 @@ def run(options):
             print(cfg.whoAmI().initCmd)
             print()
         try:    httpResp = connectToServer.sendMatchRequest(cfg)
-        except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
+        except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
         ### cancel match request ### (would have to be issued as subprocess after match request, but before a match is assigned
             #import time
             #time.sleep(1)
@@ -125,7 +125,7 @@ def run(options):
             try:    getPlayer(pName) # test whether player exists locally
             except ValueError: # player w/ name pName is not defined locally
                 try: y = connectToServer.ladderPlayerInfo(cfg, pName) # get player info from ladder
-                except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
+                except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
                 settings = y[0][0] # settings of player[0]
                 del settings["created"] # creation data is retained locally
                 addPlayer(settings) # ensures that loading json + inflation succeeds
@@ -195,7 +195,7 @@ def run(options):
             #try:
             #    httpResp = connectToServer.reportMatchCompletion(matchCfg, results, "")
             #    if not httpResp.ok: exitStatement(httpResp.text)
-            #except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
+            #except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
             #print(httpResp.json())
         ### send actual results ###
         replaySize = len(replayData) if replayData else 0
@@ -206,7 +206,7 @@ def run(options):
             try:
                 httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
                 if not httpResp.ok: exitStatement(httpResp.text)
-            except requests.exceptions.ConnectionError as e: badConnect(cfg.ladder)
+            except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
             if replaySize: print(httpResp.json()) # also display effective rating changes 
     elif options.add:       versions.addNew(*options.add.split(','))
     elif options.update:
