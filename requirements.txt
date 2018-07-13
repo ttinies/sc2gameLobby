@@ -2,3 +2,11 @@ pytest
 pytest-cov
 coveralls
 PyYAML
+six
+s2clientprotocol
+pysc2
+sc2common
+sc2gameLobby
+sc2players
+sc2maptool
+sc2ladderMgmt
