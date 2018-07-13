@@ -4,7 +4,6 @@ from __future__ import division       # python 2/3 compatibility
 from __future__ import print_function # python 2/3 compatibility
 
 from six import iteritems # python 2/3 compatibility
-from builtins import str as text # python 2/3 compatibility
 from io import BytesIO # python 2/3 compatibility
 
 from sc2gameLobby import dateFormat
