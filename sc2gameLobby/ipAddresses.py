@@ -6,8 +6,8 @@ from __future__ import print_function # python 2/3 compatibility
 import json
 import socket
 import time
-try:						from urllib2 		import urlopen
-except ModuleNotFoundError:	from urllib.request import urlopen
+try:                from urllib2        import urlopen
+except Exception:   from urllib.request import urlopen
 
 from sc2gameLobby import gameConstants as c
 
