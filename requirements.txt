@@ -2,7 +2,6 @@ pytest
 pytest-cov
 coveralls
 PyYAML
-urllib2
 six
 s2clientprotocol
 pysc2
