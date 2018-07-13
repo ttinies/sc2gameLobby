@@ -105,7 +105,7 @@ setup(
     entry_points={"console_scripts": ["sc2gameLobby=sc2gameLobby.cli:main"]},
     install_requires=REQUIRED,
     include_package_data=True,
-    package_data={"sc2gameLobby": "jsonData/versions.json"},
+    package_data={"sc2gameLobby": ["jsonData/versions.json"]},
     license="Apache License 2.0",
     classifiers=[
         # Trove classifiers
