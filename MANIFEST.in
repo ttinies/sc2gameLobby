@@ -1,0 +1,2 @@
+include README.md LICENSE  sc2gameLobby/jsonData/versions.json
+recursive-include tests *.py
