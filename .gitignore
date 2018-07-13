@@ -118,7 +118,7 @@ tags
 
 # IDE temporary files
 \#*#
-jsonData/versions_*
+sc2gameLobby/jsonData/versions_*
 # Devops stuff
 codecoverage/
 
