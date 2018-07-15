@@ -206,8 +206,11 @@ def run(options):
             try:
                 httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
                 if not httpResp.ok: exitStatement(httpResp.text)
+                if httpResp.text and "invalid" in httpResp.text:
+                    return ValueError
             except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
-            if replaySize: print(httpResp.json()) # also display effective rating changes 
+            except Exception as e: return exitStatement("%s: %s"%(type(e), e))
+            if replaySize: print(httpResp.json()) # also display effective rating changes
     elif options.add:       versions.addNew(*options.add.split(','))
     elif options.update:
         keys = [
