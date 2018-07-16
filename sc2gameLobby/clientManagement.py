@@ -66,7 +66,8 @@ class ClientController(remote_controller.RemoteController):
         # Prefer using a context manager, but this cleans most other cases.
         self.close()
     ############################################################################
-    def connect(self, url=c.LOCALHOST, port=None, timeout=c.INITIAL_TIMEOUT):
+    def connect(self, url=c.LOCALHOST, port=None, timeout=c.INITIAL_TIMEOUT,
+                      debug=False):
         """socket connect to an already running starcraft2 process"""
         if port != None: # force a selection to a new port
             if self._port!=None: # if previously allocated port, return it
@@ -79,7 +80,8 @@ class ClientController(remote_controller.RemoteController):
             url = "[%s]" % url
         for i in range(timeout):
             startTime = time.time()
-            print("attempt #%d to websocket connect to %s:%s"%(i, url, port))
+            if debug:
+                print("attempt #%d to websocket connect to %s:%s"%(i, url, port))
             try:
                 finalUrl = "ws://%s:%s/sc2api" %(url, self._port)
                 ws = websocket.create_connection(finalUrl, timeout=timeout)
