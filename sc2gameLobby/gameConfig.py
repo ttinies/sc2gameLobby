@@ -342,7 +342,8 @@ class Config(object):
         if data == None: data=self.attrs
         ret = {}
         for k,v in iteritems(data):
-            if   k == "expo":               v = v.type
+            if not v: continue # don't flatten if there's nothing to flatten
+            elif k == "expo":               v = v.type
             elif k == "version":            v = v.label
             elif k == "ladder":             v = v.name
             elif k == "players":
@@ -358,6 +359,7 @@ class Config(object):
             elif k == "mode"   and self.mode:   v = v.type
             #elif k == "state":              
             elif k == "themap" and self.themap: v = v.name
+            elif k == "replay" and self.replay: v = v.replayFilepath
             ret[k] = v
         return ret
     ############################################################################
@@ -374,7 +376,7 @@ class Config(object):
         if self.mode    and not isinstance(self.mode, types.GameModes):         self.mode       = types.GameModes(self.mode)
         if self.themap  and not isinstance(self.themap, MapRecord):             self.themap     = selectMap(name=self.themap)
     ############################################################################
-    def launchApp(self, fullScreen=True, **kwargs):
+    def launchApp(self, **kwargs):
         """Launch Starcraft2 process in the background using this configuration.
         WARNING: if the same IP address and port are specified between multiple
                  SC2 process instances, all subsequent processes after the first
@@ -384,7 +386,7 @@ class Config(object):
         # TODO -- launch host in window minimized/headless mode
         vers = self.getVersion()
         return app.start(version=vers,#game_version=vers.baseVersion, data_version=vers.dataHash,
-            full_screen=fullScreen, verbose=self.debug, **kwargs)
+            full_screen=self.fullscreen, verbose=self.debug, **kwargs)
     ############################################################################
     def load(self, cfgFile=None, timeout=None):
         """expect that the data file has already been established"""
