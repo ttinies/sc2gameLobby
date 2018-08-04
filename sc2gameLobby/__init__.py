@@ -30,8 +30,7 @@ from sc2gameLobby import genericObservation as go
 from sc2gameLobby import hostGame
 from sc2gameLobby import joinGame
 from sc2gameLobby import versions
-
-from sc2maptool.__version__ import *
+from sc2gameLobby.__version__ import *
 
 config = gameConfig.Config  # set up the player/match environment as desired
 host = hostGame.run  # host a new Starcraft2 match, given a configuration
