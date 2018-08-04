@@ -29,7 +29,6 @@ from sc2gameLobby import getGameData
 from sc2gameLobby import genericObservation as go
 from sc2gameLobby import hostGame
 from sc2gameLobby import joinGame
-from sc2gameLobby import replay
 from sc2gameLobby import versions
 
 from sc2maptool.__version__ import *
