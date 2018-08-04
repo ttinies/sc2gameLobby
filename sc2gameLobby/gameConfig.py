@@ -129,6 +129,7 @@ class Config(object):
         self.render     = render
         # post-game behavior
         self.replay     = replay
+        self.reqFiles   = []
         # class behavior
         self.debug      = debug
         #self.state = c.GAME_INIT
@@ -359,7 +360,6 @@ class Config(object):
             elif k == "mode"   and self.mode:   v = v.type
             #elif k == "state":              
             elif k == "themap" and self.themap: v = v.name
-            elif k == "replay" and self.replay: v = v.replayFilepath
             ret[k] = v
         return ret
     ############################################################################
