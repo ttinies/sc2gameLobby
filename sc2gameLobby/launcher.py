@@ -136,7 +136,6 @@ def run(options):
         print()
         ### launch game; collect results ###
         thisPlayer = matchCfg.whoAmI()
-        agentStuff = [] # preserve python agent info (if applicable)
         result     = None
         replayData = ""
         callBack   = go.doNothing # play with human control only (default) 
@@ -148,8 +147,7 @@ def run(options):
                     thing = importlib.import_module(moduleName)
                     for part in parts[1:]: # access callable defined by the agent
                         thing = getattr(thing, part)
-                    agentStuff = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process 
-                    callBack = agentStuff[0] # callback is always first item in list
+                    callBack = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process
                 except ModuleNotFoundError as e:    exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
                 except AttributeError as e:         exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
                 except Exception as e:              exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
@@ -176,9 +174,9 @@ def run(options):
             print(e)
             result = rh.launchFailure(matchCfg) # report UNDECIDED results
         finally:
-            for item in agentStuff: # eradicate all agent's processes
-                if hasattr(item, "terminate"): item.terminate()
-            agentStuff = []
+            if hasattr(callback, "shutdown"):
+                callback.shutdown() # close dependencies appropriately
+            callback = None
         ### simulate sending match results ###
             #results = []
             #from numpy.random import choice
