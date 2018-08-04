@@ -94,7 +94,8 @@ class LocalBase(lib.RunConfig):
     if os.path.isfile(baseVersExec):
         return baseVersExec # if baseVersion in Versions subdir is valid, it is the correct executable
     raise sc_process.SC2LaunchError("Specified baseVersion %s does not exist at %s.%s    available: %s"%(\
-        baseVersion, baseVersExec, os.linesep, " ".join(sorted(self.versionMap().keys())) ))
+        baseVersion, baseVersExec, os.linesep, " ".join(
+            str(val) for val in sorted(self.versionMap().keys())) ))
   ##############################################################################
   def listVersions(self):
       ret = []
