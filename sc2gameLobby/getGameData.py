@@ -32,6 +32,7 @@ from pysc2.lib.sc_process import FLAGS
 from sc2common import types as t
 from sc2gameLobby import gameConfig
 from sc2gameLobby import gameConstants as c
+from sc2maptool import selectMap
 from sc2players import PlayerPreGame
 #from sc2gamemgr import genericObservation as go
 
@@ -48,7 +49,7 @@ def run(debug=False):
     FLAGS(sys.argv)
     config = gameConfig.Config(
         version=None, # vers is None... unless a specific game version is desired
-        themap="Sequencer",  # smaller maps load faster?
+        themap=selectMap(), # pick a random map
         players=["defaulthuman", "blizzbot2_easy"],
     )
     createReq = sc_pb.RequestCreateGame( # used to advance to "Init Game" state, when hosting
