@@ -138,7 +138,7 @@ def run(options):
         thisPlayer = matchCfg.whoAmI()
         result     = None
         replayData = ""
-        callBack   = go.doNothing # play with human control only (default) 
+        callback   = go.doNothing # play with human control only (default)
         if thisPlayer.initCmd: # launch the desired player appropriately
             if re.search("^\w+\.[\w\.]+$", thisPlayer.initCmd): # found a python command; extract callback and agent process/object stuff
                 parts = thisPlayer.initCmd.split(".")
@@ -147,7 +147,7 @@ def run(options):
                     thing = importlib.import_module(moduleName)
                     for part in parts[1:]: # access callable defined by the agent
                         thing = getattr(thing, part)
-                    callBack = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process
+                    callback = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process
                 except ModuleNotFoundError as e:    exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
                 except AttributeError as e:         exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
                 except Exception as e:              exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
@@ -169,7 +169,7 @@ def run(options):
             if matchCfg.host: # host contains details of the host to connect to
                   func = join # join game on host when host details are provided
             else: func = host # no value means this machine is hosting
-            result,replayData = func(matchCfg, agentCallBack=callBack)
+            result,replayData = func(matchCfg, agentCallBack=callback)
         except c.TimeoutExceeded as e: # match failed to launch
             print(e)
             result = rh.launchFailure(matchCfg) # report UNDECIDED results
