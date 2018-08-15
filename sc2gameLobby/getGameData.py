@@ -85,18 +85,14 @@ def run(debug=False):
         controller.create_game(createReq)
         if debug: print("Starcraft2 is waiting for %d player(s) to join. (%s)"%(config.numAgents, controller.status)) # status: init_game
         playerID = controller.join_game(joinReq).player_id # SC2APIProtocol.RequestJoinGame
-        print("[HOSTGAME] %d %s"%(playerID, config))
-        return controller.ping(), controller.data()
-
+        print("[GET IN-GAME DATA] player#%d %s"%(playerID, config))
+        return (controller.ping(), controller.data())
       except (protocol.ConnectionError, protocol.ProtocolError, remote_controller.RequestError) as e:
         if debug:   print("%s Connection to game closed (NOT a bug)%s%s"%(type(e), os.linesep, e))
         else:       print(   "Connection to game closed.")
       except KeyboardInterrupt:
         print("caught command to forcibly shutdown Starcraft2 host server.")
       finally:
-        #config.disable() # if the saved cfg file still exists, always remove it
+        config.disable() # if the saved cfg file still exists, always remove it
         controller.quit() # force the sc2 application to close
-        print("host process has ended")
-
-#run()
 
