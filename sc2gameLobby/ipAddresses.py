@@ -53,7 +53,7 @@ def getPublicIPaddress(timeout=c.DEFAULT_TIMEOUT):
     """visible on public internet"""
     start = time.time()
     my_public_ip = None
-    e = None
+    e = Exception
     while my_public_ip == None:
         if time.time() - start > timeout:
             break
