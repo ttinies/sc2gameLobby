@@ -409,8 +409,12 @@ class Config(object):
                                 print("second(s) waited for game to appear:  %d"%(timeReported))
                 else:  raise Exception("must have a saved configuration to load or allow loading via timeout setting")
             cfgFile = cfgs.pop()
-        with open(cfgFile, "rb") as f:
-            data = f.read() # bytes => str
+        try:
+            with open(cfgFile, "rb") as f:
+                data = f.read() # bytes => str
+        except TypeError as e:
+            print("ERROR %s: %s %s"%(e, cfgFile, type(cfgFile)))
+            raise
         self.loadJson(data) # str => dict
         if self.debug:
             print("configuration loaded: %s"%(self.name))
