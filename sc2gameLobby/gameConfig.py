@@ -101,7 +101,6 @@ class Config(object):
         # application setup info
         self.expo       = expo
         self.version    = version # automatically calculate unless specified
-        # TODO version
         # match setup info
         self.ladder     = ladder
         self.players    = players
