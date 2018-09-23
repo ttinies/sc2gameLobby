@@ -116,6 +116,8 @@ class Config(object):
         self.host       = host   # if defined, this config is for a slave
         self.slavePorts = slaves # if not defined, this is for the host
         self.ladderMsg  = ""
+        # pre-game behavior
+        self.scenario   = None
         # in-game behavior
         self.fogDisabled= fogDisabled
         self.stepSize   = int(stepSize)      
@@ -205,6 +207,11 @@ class Config(object):
         """the executable application's path"""
         vers = self.version.label if self.version else None # executables in Versions folder are stored by baseVersion (modified by game data patches)
         return self.installedApp.exec_path(vers)
+    ############################################################################
+    @property
+    def is64bit(self):
+        """whether the this machine is 64-bit capable or not"""
+        return self.installedApp.is64bit
     ############################################################################
     @property
     def installedApp(self):
