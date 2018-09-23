@@ -80,20 +80,9 @@ with your system setup.
 
 #### Dependencies
 
-This sc2gameLobby package is indended to run with python version > 3.6.  It may very well work with older versions, but 
-no assurances are provided.
-
-This sc2gameLobby package is dependent on the following additional packages.  If using the above installation methods, 
-these will automatically be installed.
-
-* Package [sc2common](https://github.com/ttinies/sc2common)       -- common definitions for all Starcraft 2 implementations.
-* Package [sc2ladderMgmt](https://github.com/ttinies/sc2ladderMgmt) -- manage the compatible ladders.
-* Package [sc2maptool](https://github.com/ttinies/sc2gameMapRepo) -- manage available Starcraft 2 maps.
-* Package [sc2players](https://github.com/ttinies/sc2players) -- manage players locally that are available on the ladder.
-* Package [pysc2](https://github.com/deepmind/pysc2) -- Deepmind's foray into Starcraft 2 machine learning.
-* Package [s2clientprotocol](https://github.com/Blizzard/s2client-proto/tree/master/s2clientprotocol) -- Blizzard's
-official protocol that supports communication with a Starcraft 2 game client.
-* Package [six](https://pypi.org/project/six/) -- python 2/3 compatibility
+This sc2gameLobby package is indended to run with python version >= 3.5. Package dependencies are defined in
+ [requirements.txt](https://github.com/ttinies/sc2gameLobby/blob/master/requirements.txt).
+Dependencies are installed automatically when using the installation methods above.
 
 #### Verification of Valid Installation
 
@@ -107,7 +96,7 @@ usage: __main__.py [-h] [--nogui] [--search PLAYERS] [--history] [-l] [-p]
 PURPOSE: front-end interface to easily and reliably match against opponents
 and run Starcraft2 opponents.
 ...
-version: 0.7.0
+version: 1.0.0
 ```
 
 test command: `> python -m sc2gameLobby --versions`
