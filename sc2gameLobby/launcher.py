@@ -15,12 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from __future__ import absolute_import
-from __future__ import division       # python 2/3 compatibility
-from __future__ import print_function # python 2/3 compatibility
-
-from six import iteritems # python 2/3 compatibility
-
 import importlib
 import json
 import os
@@ -32,6 +26,7 @@ import time
 
 from sc2players import getPlayer, PlayerPreGame, PlayerRecord
 from sc2ladderMgmt import getLadder
+
 from sc2gameLobby.gameConfig import Config
 from sc2gameLobby import connectToServer
 from sc2gameLobby import gameConstants as c
@@ -93,7 +88,8 @@ def run(options):
         if not options.player: options.player = options.search
         cfg = getLaunchConfig(options)
         try: httpResp = connectToServer.ladderPlayerInfo(cfg, options.search, getMatchHistory=options.history)
-        except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
+        except requests.exceptions.ConnectionError:
+            return badConnect(cfg.ladder)
         if not httpResp.ok: exitStatement(httpResp.text)
         printStr = "%15s : %s"
         for playerAttrs, playerHistory in httpResp.json():
@@ -113,7 +109,8 @@ def run(options):
             print(cfg.whoAmI().initCmd)
             print()
         try:    httpResp = connectToServer.sendMatchRequest(cfg)
-        except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
+        except requests.exceptions.ConnectionError:
+            return badConnect(cfg.ladder)
         ### cancel match request ### (would have to be issued as subprocess after match request, but before a match is assigned
             #import time
             #time.sleep(1)
@@ -125,7 +122,8 @@ def run(options):
             try:    getPlayer(pName) # test whether player exists locally
             except ValueError: # player w/ name pName is not defined locally
                 try: y = connectToServer.ladderPlayerInfo(cfg, pName) # get player info from ladder
-                except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
+                except requests.exceptions.ConnectionError:
+                    return badConnect(cfg.ladder)
                 settings = y[0][0] # settings of player[0]
                 del settings["created"] # creation data is retained locally
                 addPlayer(settings) # ensures that loading json + inflation succeeds
@@ -158,11 +156,13 @@ def run(options):
                 p.communicate()
                 msg = "Command-line bot %s finished normally."%(thisPlayer)
                 if p.returncode: # otherwise rely on client to send game result to server (else server catches the non-reporting offender)
-                    msg = "Command-line bot %s crashed (%d)."%(thisPlayer, p.returncode)
+                    msg = "Command-line bot %s crashed (%d)."%(
+                        thisPlayer, p.returncode)
                     try: # while non-python agent manages communication including match completion reporting to ladder server, some crash events can be reported by this process
-                        httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
+                        httpResp = connectToServer.reportMatchCompletion(
+                            matchCfg, result, replayData)
                         if not httpResp.ok: msg += " %s!"%(httpResp.text)
-                    except requests.exceptions.ConnectionError as e: # process can't report game result if it crashes
+                    except requests.exceptions.ConnectionError: # process can't report game result if it crashes
                         msg += " lost prior connection to %s!"%(cfg.ladder)
                 exitStatement(msg, code=p.returncode)
         try:
@@ -193,20 +193,29 @@ def run(options):
             #try:
             #    httpResp = connectToServer.reportMatchCompletion(matchCfg, results, "")
             #    if not httpResp.ok: exitStatement(httpResp.text)
-            #except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
+            #except requests.exceptions.ConnectionError:
+            #    return badConnect(cfg.ladder)
             #print(httpResp.json())
         ### send actual results ###
         replaySize = len(replayData) if replayData else 0
         if replaySize:
             print("FINAL RESULT: (%d)"%(replaySize))
             print(json.dumps(result, indent=4))
-        if result != None: # regular result is expected to be reported by
+            if options.savereplay: # save the replay if the option is specified
+                with open(options.savereplay, "wb") as f:
+                    dirName = os.path.dirname(options.savereplay)
+                    if not os.path.isdir(dirName):
+                        os.makedirs(dirName)
+                    f.write(replayData)
+        if result != None: # regular result is expected to be reported by each player
             try:
-                httpResp = connectToServer.reportMatchCompletion(matchCfg, result, replayData)
+                httpResp = connectToServer.reportMatchCompletion(
+                    matchCfg, result, replayData)
                 if not httpResp.ok: exitStatement(httpResp.text)
                 if httpResp.text and "invalid" in httpResp.text:
                     return ValueError
-            except requests.exceptions.ConnectionError as e: return badConnect(cfg.ladder)
+            except requests.exceptions.ConnectionError:
+                return badConnect(cfg.ladder)
             except Exception as e: return exitStatement("%s: %s"%(type(e), e))
             if replaySize: print(httpResp.json()) # also display effective rating changes
     elif options.add:       versions.addNew(*options.add.split(','))
@@ -225,17 +234,14 @@ def run(options):
         versions.handle.update(data)
         versions.handle.save()
     elif options.versions: # simply display the jsonData reformatted
-        for v,record in sorted(iteritems(versions.handle.ALL_VERS_DATA)):
+        for v,record in sorted(versions.handle.ALL_VERS_DATA.items()):
             print(v)
-            for k,v in sorted(iteritems(record)):
+            for k,v in sorted(record.items()):
                 print("%15s: %s"%(k,v))
             print()
     else: # without an action explicitly specified, launch the GUI with selected options
         cfg = getLaunchConfig(options)
         cfg.display()
-        print(ALLOWED_PLAYERS)
-        print(ALLOWED_LADDERS)
-        print(ALLOWED_MAPS)
         # TODO -- launch GUI that manages communication to server
         print("ERROR: GUI mode is not yet implemented.")
 
