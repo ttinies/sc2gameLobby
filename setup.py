@@ -17,7 +17,7 @@ DESCRIPTION = "An interface to request SC2 matches and launch the client for hum
 URL = "https://github.com/ttinies/sc2gameLobby"
 EMAIL = "help.fool@versentiedge.com"
 AUTHOR = "ttinies"
-REQUIRES_PYTHON = ">2.6"
+REQUIRES_PYTHON = ">3.4"
 VERSION = None
 
 # What packages are required for this module to be executed?
@@ -26,9 +26,10 @@ REQUIRED = [
     "pySC2",
     "s2clientprotocol",
     "portpicker"
-    # sc2common,
-    # sc2ladderMgmt,
-    # sc2players
+    "sc2common",
+    "sc2ladderMgmt",
+    "sc2maptool",
+    "sc2players",
 ]
 
 # The rest you shouldn't have to touch too much :)
@@ -105,7 +106,10 @@ setup(
     entry_points={"console_scripts": ["sc2gameLobby=sc2gameLobby.cli:main"]},
     install_requires=REQUIRED,
     include_package_data=True,
-    package_data={"sc2gameLobby": ["jsonData/versions.json"]},
+    package_data={"sc2gameLobby": [
+        "jsonData/versions.json",
+        "mods/Playground.SC2Mod",
+    ]},
     license="Apache License 2.0",
     classifiers=[
         # Trove classifiers
