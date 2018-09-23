@@ -25,7 +25,7 @@ REQUIRED = [
     "six",
     "pySC2",
     "s2clientprotocol",
-    "portpicker"
+    "portpicker",
     "sc2common",
     "sc2ladderMgmt",
     "sc2maptool",
