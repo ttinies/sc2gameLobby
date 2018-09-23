@@ -1,2 +1,3 @@
 include README.md LICENSE  sc2gameLobby/jsonData/versions.json
 recursive-include tests *.py
+recursive-include sc2gameLobby/mods *.SC2Mod
