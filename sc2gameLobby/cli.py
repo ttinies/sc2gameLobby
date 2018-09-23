@@ -13,7 +13,7 @@ from sc2gameLobby import launcher
 
 
 ################################################################################
-def main():
+def optionsParser():
     ALLOWED_PLAYERS = list(getKnownPlayers())
     ALLOWED_LADDERS = list(getKnownLadders())
     ALLOWED_MAPS    = filterMapNames("", closestMatch=False)
@@ -58,7 +58,13 @@ def main():
     versionOpts.add_argument("--update"         , type=str,default=""   , help="update an existing version.", metavar='<label>,<version>,<base-version>')
     versionOpts.add_argument("--add"            , type=str,default=""   , help="add a new version.", metavar='<label>,<version>,<base-version>')
     versionOpts.add_argument("--versions"       , action="store_true"   , help="display known Starcraft 2 public versions.")
-    options = parser.parse_args()
-    sys.argv = sys.argv[:1] # remove all arguments to avoid problems with absl FLAGS :(
+    return parser
+
+
+################################################################################
+def main(options=None):
+    if options == None:
+        options = optionsParser().parse_args()
+        sys.argv = sys.argv[:1] # remove all arguments to avoid problems with absl FLAGS :(
     launcher.run(options)
 
