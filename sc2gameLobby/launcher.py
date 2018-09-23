@@ -75,7 +75,7 @@ def getLaunchConfig(options):
            #resolution
            #minimap
            #layerwidth
-            replay      = options.replay,
+           #replay      = options.replay,
            #debug       = options.debug,
         )
     ret.connection # force generation of IP address and ports attributes 
