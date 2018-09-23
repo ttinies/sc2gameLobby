@@ -1,7 +1,7 @@
 [![PyPI](https://img.shields.io/pypi/v/sc2gameLobby.svg)](https://pypi.org/project/sc2gameLobby/)
 [![Build Status](https://travis-ci.org/ttinies/sc2gameLobby.svg?branch=master)](https://travis-ci.org/ttinies/sc2gameLobby)
 [![Coverage Status](https://coveralls.io/repos/github/ttinies/sc2gameLobby/badge.svg?branch=master)](https://coveralls.io/github/ttinies/sc2gameLobby?branch=master)
-[![Crates.io](https://img.shields.io/crates/l/rustc-serialize.svg)
+![Crates.io](https://img.shields.io/crates/l/rustc-serialize.svg)
 
 # Play Starcraft 2 on a ladder as a human or AI against other human AI
 
