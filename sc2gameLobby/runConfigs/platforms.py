@@ -53,6 +53,11 @@ class LocalBase(lib.RunConfig):
     self.xyz = None
   ##############################################################################
   @property
+  def is64bit(self):
+      """whether the this machine is 64-bit capable or not"""
+      return platform.machine().endswith('64')
+  ##############################################################################
+  @property
   def mapsDir(self):
       return os.path.join(self.data_dir, "Maps")
   ##############################################################################
@@ -132,8 +137,8 @@ class Windows(LocalBase):
   ##############################################################################
   def __init__(self):
     super(Windows, self).__init__(
-        os.environ.get("SC2PATH", "C:/Program Files (x86)/StarCraft II").strip('"'),
-        "SC2_x64.exe", "Support64")
+        os.environ.get("SC2PATH", "C:/Program Files (x86)/StarCraft II").strip(
+        '"'), "SC2_x64.exe", "Support64")
   ##############################################################################
   @classmethod
   def priority(cls):
