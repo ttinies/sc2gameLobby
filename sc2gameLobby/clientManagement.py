@@ -107,6 +107,11 @@ class ClientController(remote_controller.RemoteController):
             if sleepTime:   time.sleep(sleepTime)
         raise websocket.WebSocketException("Could not connect to game at %s on port %s"%(url, port))
     ############################################################################
+    @remote_controller.valid_status(remote_controller.Status.in_game)
+    def debug(self, *debugReqs):
+        """send a debug command to control the game state's setup"""
+        return self._client.send(debug=sc2api_pb2.RequestDebug(debug=debugReqs))
+    ############################################################################
     def getNewReplay(self):
         request = sc2api_pb2.RequestReplayInfo(replay_path="dummy.SC2Replay", download_data=True)
         #request.replay_path = ?
