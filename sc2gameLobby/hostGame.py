@@ -7,7 +7,6 @@ from pysc2.lib import protocol
 from pysc2.lib import remote_controller
 from pysc2.lib.sc_process import FLAGS
 
-import base64
 import os
 import subprocess
 import sys
@@ -17,12 +16,14 @@ from sc2gameLobby.clientManagement import ClientController
 from sc2gameLobby import gameConfig
 from sc2gameLobby import gameConstants as c
 from sc2gameLobby import resultHandler as rh
+from sc2gameLobby import setScenario
 
 now = time.time
 
 
 ################################################################################
-def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True):
+def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT,
+        scenario=None, debug=True):
     """PURPOSE: start a starcraft2 process using the defined the config parameters"""
     FLAGS(sys.argv) # ignore pysc2 command-line handling (eww)
     log = protocol.logging.logging
@@ -37,7 +38,13 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True):
     selectPort  = config.clientInitPort()
     controller  = None # the object that manages the application process
     finalResult = rh.playerSurrendered(config) # default to this player losing if somehow a result wasn't acquired normally
-    replayData  = "" # complete raw replay data for the match
+    replayData  = b"" # complete raw replay data for the match
+    if scenario and debug:
+        print(scenario)
+        for p in scenario.players.values():
+            print(p)
+            for u in p.units:
+                print("    %s"%u)
     if debug: print("[%s] Starcraft2 game process is launching (fullscreen=%s)."%(operType, config.fullscreen))
     with config.launchApp(ip_address=selectedIP, port=selectPort, connect=False):
       try: # WARNING: if port equals the same port of the host on the same machine, this subsequent process closes!
@@ -68,7 +75,10 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True):
             print("ERROR: agent %s crashed during init: %s (%s)"%(thisPlayer.initCmd, e, type(e)))
             return (rh.playerCrashed(config), "") # no replay information to get
         getGameState = controller.observe # function that observes what's changed since the prior gameloop(s)
+        if scenario: # create the various units, upgrades, etc. in the scenario
+            setScenario.initScenario(controller, scenario)
         startWaitTime = now()
+        scenarioStart = startWaitTime
         while True:  # wait for game to end while players/bots do their thing
             obs = getGameState()
             result = obs.player_result
@@ -81,6 +91,8 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True):
                 finalResult = rh.playerCrashed(config)
                 break
             newNow = now() # periodicially acquire the game's replay data (in case of abnormal termination)
+            if scenario and (newNow - scenarioStart) > scenario.duration: # scenario time has elapsed
+                break
             if newNow - startWaitTime > c.REPLAY_SAVE_FREQUENCY:
                 replayData = controller.save_replay()
                 startWaitTime = newNow
@@ -96,8 +108,6 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT, debug=True):
         if debug: print("caught command to forcibly shutdown Starcraft2 client.")
         finalResult = rh.playerSurrendered(config)
       finally:
-        if replayData: # ensure replay data can be transmitted over http
-            replayData = base64.encodestring(replayData).decode() # convert raw bytes into str
         if controller: controller.quit() # force the sc2 application to close
     return (finalResult, replayData)
 
