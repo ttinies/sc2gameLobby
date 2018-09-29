@@ -89,9 +89,9 @@ class Config(object):
         fogDisabled=False, stepSize=0, opponents=[], fullscreen=True,
         raw=False, score=False, feature=False, render=False,
         replay=None, debug=False,
-            #connects=[], 
+            #connects=[],
             #state=c.GAME_INIT,
-            #agentRaces=[], bots=[], 
+            #agentRaces=[], bots=[],
     ):
         self._gotPorts  = False # ensure that ports are only returned if they were retrieved on this machine
         # flexible settings auto-determination
@@ -120,7 +120,7 @@ class Config(object):
         self.scenario   = None
         # in-game behavior
         self.fogDisabled= fogDisabled
-        self.stepSize   = int(stepSize)      
+        self.stepSize   = int(stepSize)
         self.opponents  = opponents # names of specific opponents
         self.fullscreen = fullscreen
         # observation data content
@@ -364,7 +364,7 @@ class Config(object):
                 ret[k] = newPs
                 continue
             elif k == "mode"   and self.mode:   v = v.type
-            #elif k == "state":              
+            #elif k == "state":
             elif k == "themap" and self.themap: v = v.name
             ret[k] = v
         return ret
@@ -466,7 +466,7 @@ class Config(object):
         return self.version
     ############################################################################
     def getIPaddresses(self):
-        """identify the IP addresses where this process client will launch the SC2 client""" 
+        """identify the IP addresses where this process client will launch the SC2 client"""
         if not self.ipAddress:
             self.ipAddress = ipAddresses.getAll() # update with IP address
         return self.ipAddress
