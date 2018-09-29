@@ -76,6 +76,7 @@ def optionsParser(passedParser=None):
 def main(options=None):
     if options == None:
         options = optionsParser().parse_args()
+        options.scenario = None # hardcode this value because no scenario is created in regular gameplay, nor is such an option provided
         sys.argv = sys.argv[:1] # remove all arguments to avoid problems with absl FLAGS :(
     launcher.run(options)
 
