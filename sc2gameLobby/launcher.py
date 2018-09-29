@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import base64
 import importlib
 import json
 import os
@@ -24,7 +25,7 @@ import subprocess
 import sys
 import time
 
-from sc2players import getPlayer, PlayerPreGame, PlayerRecord
+from sc2players import addPlayer, getPlayer, PlayerPreGame, PlayerRecord
 from sc2ladderMgmt import getLadder
 
 from sc2gameLobby.gameConfig import Config
@@ -83,14 +84,14 @@ def getLaunchConfig(options):
 
 
 ################################################################################
-def run(options):
+def run(options, cfg=None):
     if options.search or options.history:
         if not options.player: options.player = options.search
-        cfg = getLaunchConfig(options)
+        if cfg == None:  cfg = getLaunchConfig(options)
         try: httpResp = connectToServer.ladderPlayerInfo(cfg, options.search, getMatchHistory=options.history)
         except requests.exceptions.ConnectionError:
             return badConnect(cfg.ladder)
-        if not httpResp.ok: exitStatement(httpResp.text)
+        if not httpResp.ok: return exitStatement(httpResp.text)
         printStr = "%15s : %s"
         for playerAttrs, playerHistory in httpResp.json():
             player = PlayerRecord(source=playerAttrs)
@@ -102,7 +103,7 @@ def run(options):
                 for h in playerH:   print(printStr%("history", h))
             print()
     elif options.nogui:
-        cfg = getLaunchConfig(options)
+        if cfg == None:  cfg = getLaunchConfig(options)
         if False: # only display in debug/verbose mode?
             print("REQUESTED CONFIGURATION")
             cfg.display()
@@ -115,7 +116,7 @@ def run(options):
             #import time
             #time.sleep(1)
             #print(connectToServer.cancelMatchRequest(cfg).text)
-        if not httpResp.ok: exitStatement(httpResp.text)
+        if not httpResp.ok: return exitStatement(httpResp.text)
         data = httpResp.json()
         for pData in data["players"]: # if player matchup doesn't exist locally, retrieve server information and define the player
             pName = pData[0]
@@ -146,9 +147,9 @@ def run(options):
                     for part in parts[1:]: # access callable defined by the agent
                         thing = getattr(thing, part)
                     callback = thing() # execute to acquire a list of the callback and any additional, to-be-retained objects necessary to run the agent process
-                except ModuleNotFoundError as e:    exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
-                except AttributeError as e:         exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
-                except Exception as e:              exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
+                except ModuleNotFoundError as e:    return exitStatement("agent %s initialization command (%s) did not begin with a module (expected: %s). Given: %s"%(thisPlayer.name, thisPlayer.initCmd, moduleName, e))
+                except AttributeError as e:         return exitStatement("invalid %s init command format (%s): %s"%(thisPlayer, thisPlayer.initCmd, e))
+                except Exception as e:              return exitStatement("general failure to initialize agent %s: %s %s"%(thisPlayer.name, type(e), e))
             else: # launch separate process that manages the agent and results
                 # TODO -- ensure proper port info is supplied to the subprocess
                 # TODO -- ensure proper configuration info is supplied to the subprocess
@@ -164,12 +165,13 @@ def run(options):
                         if not httpResp.ok: msg += " %s!"%(httpResp.text)
                     except requests.exceptions.ConnectionError: # process can't report game result if it crashes
                         msg += " lost prior connection to %s!"%(cfg.ladder)
-                exitStatement(msg, code=p.returncode)
+                return exitStatement(msg, code=p.returncode)
         try:
             if matchCfg.host: # host contains details of the host to connect to
                   func = join # join game on host when host details are provided
             else: func = host # no value means this machine is hosting
-            result,replayData = func(matchCfg, agentCallBack=callback)
+            result,replayData = func(matchCfg, agentCallBack=callback,
+                                     scenario=options.scenario)
         except c.TimeoutExceeded as e: # match failed to launch
             print(e)
             result = rh.launchFailure(matchCfg) # report UNDECIDED results
@@ -192,7 +194,7 @@ def run(options):
             #print(json.dumps(results, indent=4))
             #try:
             #    httpResp = connectToServer.reportMatchCompletion(matchCfg, results, "")
-            #    if not httpResp.ok: exitStatement(httpResp.text)
+            #    if not httpResp.ok: return exitStatement(httpResp.text)
             #except requests.exceptions.ConnectionError:
             #    return badConnect(cfg.ladder)
             #print(httpResp.json())
@@ -202,16 +204,17 @@ def run(options):
             print("FINAL RESULT: (%d)"%(replaySize))
             print(json.dumps(result, indent=4))
             if options.savereplay: # save the replay if the option is specified
+                dirName = os.path.dirname(options.savereplay)
+                if dirName and not os.path.isdir(dirName):
+                    os.makedirs(dirName)
                 with open(options.savereplay, "wb") as f:
-                    dirName = os.path.dirname(options.savereplay)
-                    if not os.path.isdir(dirName):
-                        os.makedirs(dirName)
                     f.write(replayData)
         if result != None: # regular result is expected to be reported by each player
-            try:
+            try: # ensure replay data can be transmitted over http
+                replayData = base64.encodestring(replayData).decode() # convert raw bytes into str
                 httpResp = connectToServer.reportMatchCompletion(
                     matchCfg, result, replayData)
-                if not httpResp.ok: exitStatement(httpResp.text)
+                if not httpResp.ok: return exitStatement(httpResp.text)
                 if httpResp.text and "invalid" in httpResp.text:
                     return ValueError
             except requests.exceptions.ConnectionError:
@@ -240,7 +243,7 @@ def run(options):
                 print("%15s: %s"%(k,v))
             print()
     else: # without an action explicitly specified, launch the GUI with selected options
-        cfg = getLaunchConfig(options)
+        if cfg == None:  cfg = getLaunchConfig(options)
         cfg.display()
         # TODO -- launch GUI that manages communication to server
         print("ERROR: GUI mode is not yet implemented.")
