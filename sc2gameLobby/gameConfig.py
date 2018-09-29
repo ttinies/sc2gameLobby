@@ -358,8 +358,8 @@ class Config(object):
                 for i,p in enumerate(v):
                     try:    diff = p.difficulty.type
                     except: diff = p.difficulty
-                    if isinstance(p, PlayerPreGame):    newPs.append( (p.name, p.type.type, p.initCmd, diff, p.rating, p.selectedRace.type, self.numObserve, p.playerID) )
-                    else:                               newPs.append( (p.name, p.type.type, p.initCmd, diff, p.rating) )
+                    if isinstance(p, PlayerPreGame):    newPs.append( (p.name, p.type.type, p.initCmd, p.initOptions, diff, p.rating, p.selectedRace.type, self.numObserve, p.playerID, p.raceDefault) )
+                    else:                               newPs.append( (p.name, p.type.type, p.initCmd, p.initOptions, diff, p.rating) )
                 # TODO -- handle if type or observers params are not available (i.e. if a simple PlayerRecord, not a PlayerPreGame
                 ret[k] = newPs
                 continue
