@@ -200,7 +200,7 @@ def run(options, cfg=None):
             #print(httpResp.json())
         ### send actual results ###
         replaySize = len(replayData) if replayData else 0
-        if replaySize:
+        if replaySize and not options.scenario:
             print("FINAL RESULT: (%d)"%(replaySize))
             print(json.dumps(result, indent=4))
             if options.savereplay: # save the replay if the option is specified
