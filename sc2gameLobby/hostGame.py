@@ -41,10 +41,8 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT,
     replayData  = b"" # complete raw replay data for the match
     if scenario and debug:
         print(scenario)
-        for p in scenario.players.values():
-            print(p)
-            for u in p.units:
-                print("    %s"%u)
+        [p.display(indent=2) for p in scenario.players.values()]
+        print()
     if debug: print("[%s] Starcraft2 game process is launching (fullscreen=%s)."%(operType, config.fullscreen))
     with config.launchApp(ip_address=selectedIP, port=selectPort, connect=False):
       try: # WARNING: if port equals the same port of the host on the same machine, this subsequent process closes!
@@ -76,7 +74,7 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT,
             return (rh.playerCrashed(config), "") # no replay information to get
         getGameState = controller.observe # function that observes what's changed since the prior gameloop(s)
         if scenario: # create the various units, upgrades, etc. in the scenario
-            setScenario.initScenario(controller, scenario)
+            setScenario.initScenario(controller, scenario, thisPlayer.playerID)
         startWaitTime = now()
         scenarioStart = startWaitTime
         while True:  # wait for game to end while players/bots do their thing
@@ -92,6 +90,8 @@ def run(config, agentCallBack, lobbyTimeout=c.INITIAL_TIMEOUT,
                 break
             newNow = now() # periodicially acquire the game's replay data (in case of abnormal termination)
             if scenario and (newNow - scenarioStart) > scenario.duration: # scenario time has elapsed
+                print("[%s] scenario has ended after a duration of %s seconds"%(
+                    operType, scenario.duration))
                 break
             if newNow - startWaitTime > c.REPLAY_SAVE_FREQUENCY:
                 replayData = controller.save_replay()
