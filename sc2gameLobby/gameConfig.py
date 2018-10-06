@@ -117,7 +117,7 @@ class Config(object):
         self.slavePorts = slaves # if not defined, this is for the host
         self.ladderMsg  = ""
         # pre-game behavior
-        self.scenario   = None
+        self.scenario   = {}
         # in-game behavior
         self.fogDisabled= fogDisabled
         self.stepSize   = int(stepSize)
@@ -138,6 +138,8 @@ class Config(object):
         else:       self.inflate()  # ensure all objects are objects
         self.isCustom   = bool(self.opponents or self.fogDisabled or \
                                self.themap    or self.stepSize)
+        if self.version == None:
+            self.version = self.getVersion()
     ############################################################################
     def __str__(self):  return self.__repr__()
     def __repr__(self):
