@@ -65,8 +65,10 @@ class LocalBase(lib.RunConfig):
   def mostRecentVersion(self):
       versMap = self.versionMap()
       orderedVersions = sorted(list(iteritems(versMap)))
-      #vers = [v[-1] for k,v in sorted(iteritems(self.versionMap()))]
-      return orderedVersions[-1][-1]
+      compatibleVersions = versions.handle.search(orderedVersions[-1][0])
+      compatibleVersions = [(v['version'], v) for v in compatibleVersions]
+      bestVersionLabel = max(compatibleVersions)[1]['label']
+      return bestVersionLabel
   ##############################################################################
   @property
   def validVersionExecutables(self):
