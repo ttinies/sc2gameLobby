@@ -254,5 +254,21 @@
         "label": "4.5.1",
         "replay-hash": "",
         "version": 67344
+    },
+    {
+        "base-version": 67926,
+        "data-hash": "",
+        "fixed-hash": "",
+        "label": "4.6.0",
+        "replay-hash": "",
+        "version": 67926
+    },
+    {
+        "base-version": 67926,
+        "data-hash": "",
+        "fixed-hash": "",
+        "label": "4.6.1",
+        "replay-hash": "",
+        "version": 68195
     }
 ]
