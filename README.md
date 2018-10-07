@@ -56,8 +56,8 @@ your AI architecture can run, it is allowed on this ladder.
 
 #### Instructions
 
-1. Install Starcraft 2 normally.  If you use an install destination path other than the default, ensure it's specified
-using an environment variable called SC2PATH.
+1. Install Starcraft 2 normally.  **IMPORTANT** If you use an install destination path other than the default, ensure
+the environment variable `SC2PATH` is set with the path to your customized installation path.
 2. Install any(?) version of [python](https://www.python.org/downloads/) that is compatible with your system.
 3. Use conda **or** pip via instructions below to install sc2gameLobby.
 > NOTE: you can also install this package via other means, but you may have to manage your environment to ensure all
