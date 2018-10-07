@@ -25,7 +25,6 @@ import os
 
 from sc2gameLobby import gameConfig
 from sc2gameLobby import gameConstants
-from sc2gameLobby import getGameData
 from sc2gameLobby import genericObservation as go
 from sc2gameLobby import hostGame
 from sc2gameLobby import joinGame
