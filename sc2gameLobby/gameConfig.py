@@ -26,8 +26,6 @@ from sc2gameLobby import versions
 from sc2players import getPlayer, buildPlayer, PlayerRecord, PlayerPreGame
 from sc2players import constants as playerConstants
 from sc2ladderMgmt.ladders import Ladder
-from sc2maptool.functions import selectMap
-from sc2maptool.mapRecord import MapRecord
 
 """
 establish a configuration file containing game information such that other
@@ -373,6 +371,8 @@ class Config(object):
     ############################################################################
     def inflate(self, newData={}):
         """ensure all object attribute values are objects"""
+        from sc2maptool.functions import selectMap
+        from sc2maptool.mapRecord import MapRecord
         self.__dict__.update(newData)
         #if not isinstance(self.state, types.GameStates):      self.state     = types.GameStates(self.state)
         if self.expo    and not isinstance(self.expo, types.ExpansionNames):    self.expo       = types.ExpansionNames(self.expo)
