@@ -15,12 +15,6 @@ from sc2gameLobby import debugCmds
 from sc2gameLobby import gameConstants as c
 from sc2gameLobby.gameConfig import Config
 
-# windows 10
-banksDir = "C:\\Users\\jared\\Documents\\StarCraft II\\Banks"
-availableBankNames = glob.glob(os.path.join(banksDir, "*"))
-editorCmd = "%s -run %s -testMod %s -displayMode 1"
-#EXAMPLE:
-#C:\\StarCraft II\\Support64>SC2Switcher_x64.exe -run "Ladder\\CatalystLE.SC2Map" -testMod "C:\\Users\\TheWisp\\Documents\\PlayGround.SC2Mod"
 
 ################################################################################
 def launchEditor(mapObj):
@@ -31,6 +25,7 @@ def launchEditor(mapObj):
     cfg = Config()
     if cfg.is64bit: selectedArchitecture = c.SUPPORT_64_BIT_TERMS
     else:           selectedArchitecture = c.SUPPORT_32_BIT_TERMS
+    editorCmd = "%s -run %s -testMod %s -displayMode 1"
     fullAppPath = os.path.join(
         cfg.installedApp.data_dir,
         c.FOLDER_APP_SUPPORT%(selectedArchitecture[0]))
