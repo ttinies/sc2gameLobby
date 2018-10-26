@@ -56,7 +56,7 @@ def getLaunchConfig(options):
     player = PlayerPreGame(getPlayer(options.player), selectedRace=options.race, observe=options.observe)
     ret = Config( # create game config
             expo        = c.EXPO_SELECT[options.exp],
-            version     = options.version or versions.handle.mostRecent['version'],
+            version     = options.version,
             ladder      = getLadder(options.ladder),
             players     = [player],
             whichPlayer = player.name,
