@@ -64,11 +64,15 @@ class LocalBase(lib.RunConfig):
   @property
   def mostRecentVersion(self):
       versMap = self.versionMap()
-      orderedVersions = sorted(list(iteritems(versMap)))
-      compatibleVersions = versions.handle.search(orderedVersions[-1][0])
-      compatibleVersions = [(v['version'], v) for v in compatibleVersions]
-      bestVersionLabel = max(compatibleVersions)[1]['label']
-      return bestVersionLabel
+      orderedVersions = sorted(list(iteritems(versMap)), reverse=True)
+      for baseVers, labelVs in orderedVersions:
+          compatibleVers = versions.handle.search(baseVers)
+          if not compatibleVers: continue # there isn't a matching defined version for this installed version
+          compatibleVersions = [(v['version'], v) for v in compatibleVers]
+          bestVersionLabel = max(compatibleVersions)[1]['label']
+          return bestVersionLabel
+      raise NotImplementedError(("couldn't identify a valid version definition"\
+          " among the installed game versions: %s")%(labelStrings))
   ##############################################################################
   @property
   def validVersionExecutables(self):
