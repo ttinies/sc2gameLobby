@@ -17,6 +17,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-VERSION = (1, 1, 9)
+VERSION = (1, 1, 10)
 
 __version__ = '.'.join(map(str, VERSION))
