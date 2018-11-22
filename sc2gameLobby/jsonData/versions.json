@@ -278,5 +278,13 @@
         "label": "4.6.2",
         "replay-hash": "",
         "version": 69232
+    },
+    {
+        "base-version": 70154,
+        "data-hash": "",
+        "fixed-hash": "",
+        "label": "4.7.1",
+        "replay-hash": "",
+        "version": 70326
     }
 ]
