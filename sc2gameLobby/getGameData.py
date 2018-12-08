@@ -49,7 +49,7 @@ def run(debug=False):
     FLAGS(sys.argv)
     config = gameConfig.Config(
         version=None, # vers is None... unless a specific game version is desired
-        themap=selectMap(), # pick a random map
+        themap=selectMap(ladder=True), # pick a random ladder map
         players=["defaulthuman", "blizzbot2_easy"],
     )
     createReq = sc_pb.RequestCreateGame( # used to advance to "Init Game" state, when hosting
